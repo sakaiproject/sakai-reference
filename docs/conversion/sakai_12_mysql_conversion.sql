@@ -435,7 +435,7 @@ ALTER TABLE lti_content ADD toolorder TINYINT DEFAULT '0';
 -- BEGIN SAK-32045 -- Update My Workspace to My Home
 UPDATE SAKAI_SITE
 SET TITLE = 'Home', DESCRIPTION = 'Home'
-WHERE SITE_ID = '!user';
+WHERE SITE_ID LIKE '!user%';
 
 UPDATE SAKAI_SITE
 SET TITLE = 'Home', DESCRIPTION = 'Home'
