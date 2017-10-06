@@ -411,3 +411,11 @@ DROP TABLE PERMISSIONS_TEMP;
 DROP TABLE PERMISSIONS_SRC_TEMP;
 
 -- END SAK-32572 Additional permission settings for Messages
+
+-- SAK-33430 user_audits_log is queried against site_id
+ALTER TABLE user_audits_log 
+  MODIFY COLUMN site_id varchar(99),
+  MODIFY COLUMN role_name varchar(99),
+  DROP INDEX user_audits_log_index,
+  ADD INDEX user_audits_log_index(site_id);
+-- END SAK-33430
