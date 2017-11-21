@@ -462,3 +462,8 @@ ALTER TABLE user_audits_log MODIFY (role_name varchar2(99));
 DROP INDEX user_audits_log_index;
 CREATE INDEX user_audits_log_index on user_audits_log (site_id);
 -- END SAK-33430
+
+-- SAK-33406 - Allow reorder of LTI plugin tools
+alter table lti_tools add toolorder NUMBER(2) DEFAULT '0';
+alter table lti_content add toolorder NUMBER(2) DEFAULT '0';
+-- END SAK-33406

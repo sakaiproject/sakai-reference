@@ -424,3 +424,10 @@ ALTER TABLE user_audits_log
   DROP INDEX user_audits_log_index,
   ADD INDEX user_audits_log_index(site_id);
 -- END SAK-33430
+
+-- SAK-33406 - Allow reorder of LTI plugin tools
+
+ALTER TABLE lti_tools ADD toolorder TINYINT DEFAULT '0';
+ALTER TABLE lti_content ADD toolorder TINYINT DEFAULT '0';
+
+-- END SAK-33406
