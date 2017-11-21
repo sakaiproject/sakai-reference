@@ -467,3 +467,18 @@ CREATE INDEX user_audits_log_index on user_audits_log (site_id);
 alter table lti_tools add toolorder NUMBER(2) DEFAULT '0';
 alter table lti_content add toolorder NUMBER(2) DEFAULT '0';
 -- END SAK-33406
+
+-- BEGIN SAK-32045 -- Update My Workspace to My Home
+UPDATE SAKAI_SITE
+SET TITLE = 'Home', DESCRIPTION = 'Home'
+WHERE SITE_ID LIKE '!user%';
+
+UPDATE SAKAI_SITE
+SET TITLE = 'Home', DESCRIPTION = 'Home'
+WHERE TITLE = 'My Workspace'
+AND SITE_ID LIKE '~%';
+
+UPDATE SAKAI_SITE_TOOL
+SET TITLE = 'Home' 
+WHERE REGISTRATION = 'sakai.iframe.myworkspace';
+-- END SAK-32045
