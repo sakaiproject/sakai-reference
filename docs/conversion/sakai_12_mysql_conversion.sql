@@ -446,3 +446,12 @@ UPDATE SAKAI_SITE_TOOL
 SET TITLE = 'Home' 
 WHERE REGISTRATION = 'sakai.iframe.myworkspace';
 -- END SAK-32045
+
+-- SAK-SAK-33772 - Add LTI 1.3 Data model items
+
+ALTER TABLE lti_content ADD     lti13 TINYINT DEFAULT '0';
+ALTER TABLE lti_content ADD     lti13_settings MEDIUMTEXT;
+ALTER TABLE lti_tools ADD     lti13 TINYINT DEFAULT '0';
+ALTER TABLE lti_tools ADD     lti13_settings MEDIUMTEXT;
+
+-- END SAK-33772
