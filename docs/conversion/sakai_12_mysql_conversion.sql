@@ -333,9 +333,9 @@ drop table lti_mapping;
 
 INSERT INTO SAKAI_REALM_FUNCTION VALUES (DEFAULT, 'msg.permissions.allowToField.myGroupRoles');
 
---The permission above is false for all users by default
---if you want to turn this feature on for all "student/acces" type roles, then run 
---the following conversion:
+-- The permission above is false for all users by default
+-- if you want to turn this feature on for all "student/acces" type roles, then run 
+-- the following conversion:
 
 
 INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'access'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'msg.permissions.allowToField.myGroupRoles'));
