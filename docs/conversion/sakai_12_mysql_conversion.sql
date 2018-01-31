@@ -101,8 +101,8 @@ ALTER TABLE lesson_builder_pages ADD owned bit default false not null;
 --
 -- SAK-31840 update defaults as its now managed in the POJO
 --
-alter table GB_GRADABLE_OBJECT_T alter column IS_EXTRA_CREDIT bit(1) DEFAULT NULL;
-alter table GB_GRADABLE_OBJECT_T alter column HIDE_IN_ALL_GRADES_TABLE bit(1) DEFAULT NULL;
+ALTER TABLE GB_GRADABLE_OBJECT_T MODIFY column IS_EXTRA_CREDIT bit(1) DEFAULT NULL;
+ALTER TABLE GB_GRADABLE_OBJECT_T MODIFY column HIDE_IN_ALL_GRADES_TABLE bit(1) DEFAULT NULL;
 
 -- BEGIN SAK-31819 Remove the old ScheduledInvocationManager job as it's not present in Sakai 12.
 DELETE FROM QRTZ_SIMPLE_TRIGGERS WHERE TRIGGER_NAME='org.sakaiproject.component.app.scheduler.ScheduledInvocationManagerImpl.runner';
@@ -333,9 +333,9 @@ drop table lti_mapping;
 
 INSERT INTO SAKAI_REALM_FUNCTION VALUES (DEFAULT, 'msg.permissions.allowToField.myGroupRoles');
 
---The permission above is false for all users by default
---if you want to turn this feature on for all "student/acces" type roles, then run 
---the following conversion:
+-- The permission above is false for all users by default
+-- if you want to turn this feature on for all "student/acces" type roles, then run 
+-- the following conversion:
 
 
 INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'access'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'msg.permissions.allowToField.myGroupRoles'));
@@ -446,3 +446,12 @@ UPDATE SAKAI_SITE_TOOL
 SET TITLE = 'Home' 
 WHERE REGISTRATION = 'sakai.iframe.myworkspace';
 -- END SAK-32045
+
+-- SAK-SAK-33772 - Add LTI 1.3 Data model items
+
+ALTER TABLE lti_content ADD     lti13 TINYINT DEFAULT '0';
+ALTER TABLE lti_content ADD     lti13_settings MEDIUMTEXT;
+ALTER TABLE lti_tools ADD     lti13 TINYINT DEFAULT '0';
+ALTER TABLE lti_tools ADD     lti13_settings MEDIUMTEXT;
+
+-- END SAK-33772

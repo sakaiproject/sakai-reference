@@ -730,3 +730,11 @@ CREATE TABLE context_mapping (
   CONSTRAINT UK_CONTEXT_MAPPING UNIQUE (componentId,contextId)
 );
 
+-- SAK-SAK-33772 - Add LTI 1.3 Data model items
+
+ALTER TABLE lti_content ADD lti13 NUMBER(2) DEFAULT '0';
+ALTER TABLE lti_content ADD lti13_settings CLOB DEFAULT NULL;
+ALTER TABLE lti_tools ADD lti13 NUMBER(2) DEFAULT '0';
+ALTER TABLE lti_tools ADD lti13_settings CLOB DEFAULT NULL;
+
+-- END SAK-33772
