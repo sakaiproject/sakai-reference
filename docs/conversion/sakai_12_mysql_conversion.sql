@@ -25,6 +25,17 @@ CREATE TABLE IF NOT EXISTS CONTENTREVIEW_ITEM (
 );
 -- END SAK-30207
 
+-- SAK-33723 Content review item properties
+CREATE TABLE CONTENTREVIEW_ITEM_PROPERTIES (
+  CONTENTREVIEW_ITEM_ID bigint(20) NOT NULL,
+  VALUE varchar(255) DEFAULT NULL,
+  PROPERTY varchar(255) NOT NULL,
+  PRIMARY KEY (CONTENTREVIEW_ITEM_ID,PROPERTY),
+  CONSTRAINT FOREIGN KEY (CONTENTREVIEW_ITEM_ID) REFERENCES CONTENTREVIEW_ITEM (id)
+);
+
+-- END SAK-33723
+
 -- 
 -- SAK-31641 Switch from INTs to VARCHARs in Oauth
 -- 
@@ -67,9 +78,9 @@ CREATE INDEX popup_dismissed_lower_user_id on pasystem_popup_dismissed (user_id)
 CREATE INDEX banner_dismissed_user_id on pasystem_banner_dismissed (user_id);
 
 -- Map existing EIDs to their corresponding user IDs
-update pasystem_popup_assign popup set user_id = (select user_id from sakai_user_id_map map where popup.user_eid = map.eid);
-update pasystem_popup_dismissed popup set user_id = (select user_id from sakai_user_id_map map where popup.user_eid = map.eid);
-update pasystem_banner_dismissed banner set user_id = (select user_id from sakai_user_id_map map where banner.user_eid = map.eid);
+update pasystem_popup_assign popup set user_id = (select user_id from SAKAI_USER_ID_MAP map where popup.user_eid = map.eid);
+update pasystem_popup_dismissed popup set user_id = (select user_id from SAKAI_USER_ID_MAP map where popup.user_eid = map.eid);
+update pasystem_banner_dismissed banner set user_id = (select user_id from SAKAI_USER_ID_MAP map where banner.user_eid = map.eid);
 
 -- Any rows that couldn't be mapped are dropped (there shouldn't
 -- really be any, but if there are those users were already being
@@ -323,10 +334,37 @@ ALTER TABLE MFR_PERMISSION_LEVEL_T ADD INDEX MFR_COMPOSITE_PERM (TYPE_UUID, NAME
 
 -- SAK-32442 - LTI Column cleanup
 -- These conversions may fail if you started Sakai at newer versions that didn't contain these columns/tables
-alter table lti_tools drop column enabled_capability;
-alter table lti_deploy drop column allowlori;
-alter table lti_tools drop column allowlori;
-drop table lti_mapping;
+set @exist_Check := (
+    select count(*) from information_schema.columns 
+    where TABLE_NAME='lti_tools' 
+    and COLUMN_NAME='enabled_capability' 
+    and TABLE_SCHEMA=database()
+) ;
+set @sqlstmt := if(@exist_Check>0,'alter table lti_tools drop column enabled_capability', 'select ''''') ;
+prepare stmt from @sqlstmt ;
+execute stmt;
+
+set @exist_Check := (
+    select count(*) from information_schema.columns 
+    where TABLE_NAME='lti_tools' 
+    and COLUMN_NAME='allowlori' 
+    and TABLE_SCHEMA=database()
+) ;
+set @sqlstmt := if(@exist_Check>0,'alter table lti_tools drop column allowlori', 'select ''''') ;
+prepare stmt from @sqlstmt ;
+execute stmt;
+
+set @exist_Check := (
+    select count(*) from information_schema.columns 
+    where TABLE_NAME='lti_deploy' 
+    and COLUMN_NAME='allowlori' 
+    and TABLE_SCHEMA=database()
+) ;
+set @sqlstmt := if(@exist_Check>0,'alter table lti_tools drop column allowlori', 'select ''''') ;
+prepare stmt from @sqlstmt ;
+execute stmt;
+
+drop table IF EXISTS lti_mapping;
 -- END SAK-32442
 
 -- SAK-32572 Additional permission settings for Messages
@@ -455,3 +493,128 @@ ALTER TABLE lti_tools ADD     lti13 TINYINT DEFAULT '0';
 ALTER TABLE lti_tools ADD     lti13_settings MEDIUMTEXT;
 
 -- END SAK-33772
+
+-- SAK-32440 - Add LTI site info config
+
+ALTER TABLE lti_tools ADD     siteinfoconfig tinyint(4) DEFAULT '0';
+
+-- END SAK-32440
+
+-- SAK-32642 Commons Tools
+
+CREATE TABLE COMMONS_COMMENT (
+  ID char(36) NOT NULL,
+  POST_ID char(36) DEFAULT NULL,
+  CONTENT mediumtext NOT NULL,
+  CREATOR_ID varchar(99) NOT NULL,
+  CREATED_DATE datetime NOT NULL,
+  MODIFIED_DATE datetime NOT NULL,
+  PRIMARY KEY (ID),
+  KEY creator_id (CREATOR_ID),
+  KEY post_id (POST_ID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE COMMONS_COMMONS_POST (
+  COMMONS_ID char(36) DEFAULT NULL,
+  POST_ID char(36) DEFAULT NULL,
+  UNIQUE KEY commons_id_post_id (COMMONS_ID,POST_ID)
+);
+
+CREATE TABLE COMMONS_COMMONS (
+  ID char(36) NOT NULL,
+  SITE_ID varchar(99) NOT NULL,
+  EMBEDDER varchar(24) NOT NULL,
+  PRIMARY KEY (ID)
+);
+
+CREATE TABLE COMMONS_POST (
+  ID char(36) NOT NULL,
+  CONTENT mediumtext NOT NULL,
+  CREATOR_ID varchar(99) NOT NULL,
+  CREATED_DATE datetime NOT NULL,
+  MODIFIED_DATE datetime NOT NULL,
+  RELEASE_DATE datetime NOT NULL,
+  PRIMARY KEY (ID),
+  KEY creator_id (CREATOR_ID)
+);
+
+-- END SAK-32642
+
+-- SAM-2970 Extended Time
+
+CREATE TABLE SAM_EXTENDEDTIME_T (
+  ID bigint(20) NOT NULL,
+  ASSESSMENT_ID bigint(20) DEFAULT NULL,
+  PUB_ASSESSMENT_ID bigint(20) DEFAULT NULL,
+  USER_ID varchar(255) DEFAULT NULL,
+  GROUP_ID varchar(255) DEFAULT NULL,
+  START_DATE datetime(6) DEFAULT NULL,
+  DUE_DATE datetime(6) DEFAULT NULL,
+  RETRACT_DATE datetime(6) DEFAULT NULL,
+  TIME_HOURS int(11) DEFAULT NULL,
+  TIME_MINUTES int(11) DEFAULT NULL,
+  PRIMARY KEY (ID),
+  KEY (ASSESSMENT_ID),
+  KEY (PUB_ASSESSMENT_ID),
+  CONSTRAINT FOREIGN KEY (PUB_ASSESSMENT_ID) REFERENCES SAM_PUBLISHEDASSESSMENT_T (ID),
+  CONSTRAINT FOREIGN KEY (ASSESSMENT_ID) REFERENCES SAM_ASSESSMENTBASE_T (ID)
+);
+
+-- END SAM-2970
+
+-- SAK-31819 Quartz scheduler
+
+CREATE TABLE context_mapping (
+  uuid varchar(255) NOT NULL,
+  componentId varchar(255) DEFAULT NULL,
+  contextId varchar(255) DEFAULT NULL,
+  PRIMARY KEY (uuid),
+  UNIQUE KEY (componentId,contextId)
+);
+
+-- END SAK-31819
+
+-- SAM-3115 Tags and Search in Samigo
+
+ALTER TABLE SAM_ITEM_T ADD COLUMN HASH varchar(255) DEFAULT NULL;
+ALTER TABLE SAM_PUBLISHEDITEM_T ADD COLUMN HASH varchar(255) DEFAULT NULL;
+ALTER TABLE SAM_PUBLISHEDITEM_T ADD COLUMN ITEMHASH varchar(255) DEFAULT NULL;
+
+CREATE TABLE SAM_ITEMTAG_T (
+  ITEMTAGID bigint(20) NOT NULL,
+  ITEMID bigint(20) NOT NULL,
+  TAGID varchar(36) NOT NULL,
+  TAGLABEL varchar(255) NOT NULL,
+  TAGCOLLECTIONID varchar(36) NOT NULL,
+  TAGCOLLECTIONNAME varchar(255) NOT NULL,
+  PRIMARY KEY (ITEMTAGID),
+  KEY SAM_ITEMTAG_ITEMID_I (ITEMID),
+  CONSTRAINT FOREIGN KEY (ITEMID) REFERENCES SAM_ITEM_T (ITEMID)
+);
+
+CREATE TABLE SAM_PUBLISHEDITEMTAG_T (
+  ITEMTAGID bigint(20) NOT NULL,
+  ITEMID bigint(20) NOT NULL,
+  TAGID varchar(36) NOT NULL,
+  TAGLABEL varchar(255) NOT NULL,
+  TAGCOLLECTIONID varchar(36) NOT NULL,
+  TAGCOLLECTIONNAME varchar(255) NOT NULL,
+  PRIMARY KEY (ITEMTAGID),
+  KEY SAM_PUBLISHEDITEMTAG_ITEMID_I (ITEMID),
+  CONSTRAINT FOREIGN KEY (ITEMID) REFERENCES SAM_PUBLISHEDITEM_T (ITEMID)
+);
+
+
+--END SAM-3115
+
+-- SAK-32173 Syllabus remove open in new window option
+
+ALTER TABLE SAKAI_SYLLABUS_ITEM DROP COLUMN openInNewWindow;
+
+-- END SAK-33173 
+
+-- SAK-33896  Remove site manage site association code
+DROP TABLE IF EXISTS SITEASSOC_CONTEXT_ASSOCIATIO;
+
+--END SAK-33896 
+
