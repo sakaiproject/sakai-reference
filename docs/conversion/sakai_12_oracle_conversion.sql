@@ -25,6 +25,17 @@ CREATE TABLE CONTENTREVIEW_ITEM (
 );
 -- END SAK-30207
 
+-- SAK-33723 Content review item properties
+CREATE TABLE CONTENTREVIEW_ITEM_PROPERTIES (
+  CONTENTREVIEW_ITEM_ID number(19) NOT NULL,
+  VALUE varchar2(255) DEFAULT NULL,
+  PROPERTY varchar2(255) NOT NULL,
+  PRIMARY KEY (CONTENTREVIEW_ITEM_ID,PROPERTY),
+  FOREIGN KEY (CONTENTREVIEW_ITEM_ID) REFERENCES CONTENTREVIEW_ITEM (id)
+);
+
+-- END SAK-33723
+
 --
 -- SAK-31641 Switch from INTs to VARCHARs in Oauth
 --
@@ -79,9 +90,9 @@ DELETE FROM pasystem_popup_dismissed WHERE user_id is null;
 DELETE FROM pasystem_banner_dismissed WHERE user_id is null;
 
 -- Enforce NULL checks on the new columns
-ALTER TABLE pasystem_popup_assign MODIFY (user_id NOT NULL);
-ALTER TABLE pasystem_popup_dismissed MODIFY (user_id NOT NULL);
-ALTER TABLE pasystem_banner_dismissed MODIFY (user_id NOT NULL);
+ALTER TABLE pasystem_popup_assign MODIFY user_id varchar2(99) NOT NULL;
+ALTER TABLE pasystem_popup_dismissed MODIFY user_id varchar2(99) NOT NULL;
+ALTER TABLE pasystem_banner_dismissed MODIFY user_id varchar2(99) NOT NULL;
 
 -- Reintroduce unique constraints for the new column
 ALTER TABLE pasystem_popup_dismissed drop CONSTRAINT popup_dismissed_unique;
@@ -98,24 +109,12 @@ ALTER TABLE pasystem_banner_dismissed DROP COLUMN user_eid;
 --
 -- SAK-31840 drop defaults as its now managed in the POJO
 --
-ALTER TABLE GB_GRADABLE_OBJECT_T MODIFY IS_EXTRA_CREDIT DEFAULT NULL;
-ALTER TABLE GB_GRADABLE_OBJECT_T MODIFY HIDE_IN_ALL_GRADES_TABLE DEFAULT NULL;
+ALTER TABLE GB_GRADABLE_OBJECT_T MODIFY IS_EXTRA_CREDIT number(1) DEFAULT NULL;
+ALTER TABLE GB_GRADABLE_OBJECT_T MODIFY HIDE_IN_ALL_GRADES_TABLE number(1) DEFAULT NULL;
 
 --LSNBLDR-633 Restrict editing of Lessons pages and subpages to one person
 ALTER TABLE lesson_builder_pages ADD owned number(1) default 0 not null;
 -- END LSNBLDR-633
-
--- BEGIN SAM-3066 remove unecessary indexes because Hibernate always create an index on an FK
-DROP INDEX SAM_PUBITEM_SECTION_I;
-DROP INDEX SAM_PUBITEMFB_ITEM_I;
-DROP INDEX SAM_PUBITEMMETA_ITEM_I;
-DROP INDEX SAM_PUBITEMTEXT_ITEM_I;
-DROP INDEX SAM_PUBSECTION_ASSESSMENT_I;
-DROP INDEX SAM_PUBITEM_SECTION_I;
-DROP INDEX SAM_PUBIP_ASSESSMENT_I;
-DROP INDEX SAM_PUBSECTIONMETA_SECTION_I;
-DROP INDEX SAM_ANSWER_ITEMTEXTID_I;
--- END SAM-3066
 
 -- BEGIN SAK-31819 Remove the old ScheduledInvocationManager job as it's not present in Sakai 12.
 DELETE FROM QRTZ_SIMPLE_TRIGGERS WHERE TRIGGER_NAME='org.sakaiproject.component.app.scheduler.ScheduledInvocationManagerImpl.runner';
@@ -368,7 +367,7 @@ CREATE INDEX MFR_COMPOSITE_PERM ON MFR_PERMISSION_LEVEL_T (TYPE_UUID, NAME);
 alter table lti_tools drop column enabled_capability;
 alter table lti_deploy drop column allowlori;
 alter table lti_tools drop column allowlori;
-drop table lti_mapping
+drop table lti_mapping;
 -- END SAK-32442
 
 -- SAK-32572 Additional permission settings for Messages
@@ -495,10 +494,10 @@ CREATE TABLE ASN_ASSIGNMENT (
   ASSIGNMENT_ID varchar2(36) NOT NULL,
   ALLOW_ATTACHMENTS number(1) DEFAULT NULL,
   ALLOW_PEER_ASSESSMENT number(1) DEFAULT NULL,
-  AUTHOR varchar2(255) DEFAULT NULL,
+  AUTHOR varchar2(99) DEFAULT NULL,
   CLOSE_DATE timestamp DEFAULT NULL,
   CONTENT_REVIEW number(1) DEFAULT NULL,
-  CONTEXT varchar2(255) NOT NULL,
+  CONTEXT varchar2(99) NOT NULL,
   CREATED_DATE timestamp NOT NULL,
   MODIFIED_DATE timestamp DEFAULT NULL,
   DELETED number(1) DEFAULT NULL,
@@ -511,7 +510,7 @@ CREATE TABLE ASN_ASSIGNMENT (
   INSTRUCTIONS clob,
   IS_GROUP number(1) DEFAULT NULL,
   MAX_GRADE_POINT integer DEFAULT NULL,
-  MODIFIER varchar2(255) DEFAULT NULL,
+  MODIFIER varchar2(99) DEFAULT NULL,
   OPEN_DATE timestamp DEFAULT NULL,
   PEER_ASSESSMENT_ANON_EVAL number(1) DEFAULT NULL,
   PEER_ASSESSMENT_INSTRUCTIONS clob,
@@ -532,7 +531,7 @@ CREATE TABLE ASN_ASSIGNMENT (
 
 CREATE TABLE ASN_ASSIGNMENT_ATTACHMENTS (
   ASSIGNMENT_ID varchar2(36) NOT NULL,
-  ATTACHMENT varchar2(255) DEFAULT NULL,
+  ATTACHMENT varchar2(1024) DEFAULT NULL,
   CONSTRAINT FK_ASN_ASSIGNMENT_ATT FOREIGN KEY (ASSIGNMENT_ID) REFERENCES ASN_ASSIGNMENT (ASSIGNMENT_ID)
 );
 
@@ -544,7 +543,7 @@ CREATE TABLE ASN_ASSIGNMENT_GROUPS (
 
 CREATE TABLE ASN_ASSIGNMENT_PROPERTIES (
   ASSIGNMENT_ID varchar2(36) NOT NULL,
-  VALUE varchar2(255) DEFAULT NULL,
+  VALUE clob DEFAULT NULL,
   NAME varchar2(255) NOT NULL,
   PRIMARY KEY (ASSIGNMENT_ID,NAME),
   CONSTRAINT FK_ASN_ASSIGMENTS_PROP FOREIGN KEY (ASSIGNMENT_ID) REFERENCES ASN_ASSIGNMENT (ASSIGNMENT_ID)
@@ -559,11 +558,11 @@ CREATE TABLE ASN_SUBMISSION (
   FACTOR integer DEFAULT NULL,
   FEEDBACK_COMMENT clob,
   FEEDBACK_TEXT clob,
-  GRADE varchar2(255) DEFAULT NULL,
+  GRADE varchar2(32) DEFAULT NULL,
   GRADE_RELEASED number(1) DEFAULT NULL,
   GRADED number(1) DEFAULT NULL,
-  GRADED_BY varchar2(255) DEFAULT NULL,
-  GROUP_ID varchar2(255) DEFAULT NULL,
+  GRADED_BY varchar2(99) DEFAULT NULL,
+  GROUP_ID varchar2(36) DEFAULT NULL,
   HIDDEN_DUE_DATE number(1) DEFAULT NULL,
   HONOR_PLEDGE number(1) DEFAULT NULL,
   RETURNED number(1) DEFAULT NULL,
@@ -577,19 +576,19 @@ CREATE TABLE ASN_SUBMISSION (
 
 CREATE TABLE ASN_SUBMISSION_ATTACHMENTS (
   SUBMISSION_ID varchar2(36) NOT NULL,
-  ATTACHMENT varchar2(255) DEFAULT NULL,
+  ATTACHMENT varchar2(1024) DEFAULT NULL,
   CONSTRAINT FK_ASN_SUBMISSION_ATT FOREIGN KEY (SUBMISSION_ID) REFERENCES ASN_SUBMISSION (SUBMISSION_ID)
 );
 
 CREATE TABLE ASN_SUBMISSION_FEEDBACK_ATTACH (
   SUBMISSION_ID varchar2(36) NOT NULL,
-  FEEDBACK_ATTACHMENT varchar2(255) DEFAULT NULL,
+  FEEDBACK_ATTACHMENT varchar2(1024) DEFAULT NULL,
   CONSTRAINT FK_ASN_SUBMISSION_FEE FOREIGN KEY (SUBMISSION_ID) REFERENCES ASN_SUBMISSION (SUBMISSION_ID)
 );
 
 CREATE TABLE ASN_SUBMISSION_PROPERTIES (
   SUBMISSION_ID varchar2(36) NOT NULL,
-  VALUE varchar2(255) DEFAULT NULL,
+  VALUE clob DEFAULT NULL,
   NAME varchar2(255) NOT NULL,
   PRIMARY KEY (SUBMISSION_ID,NAME),
   CONSTRAINT FK_ASN_SUBMISSION_PROP FOREIGN KEY (SUBMISSION_ID) REFERENCES ASN_SUBMISSION (SUBMISSION_ID)
@@ -598,9 +597,9 @@ CREATE TABLE ASN_SUBMISSION_PROPERTIES (
 CREATE TABLE ASN_SUBMISSION_SUBMITTER (
   ID number NOT NULL,
   FEEDBACK clob,
-  GRADE varchar2(255) DEFAULT NULL,
+  GRADE varchar2(32) DEFAULT NULL,
   SUBMITTEE number(1) NOT NULL,
-  SUBMITTER varchar2(255) NOT NULL,
+  SUBMITTER varchar2(99) NOT NULL,
   SUBMISSION_ID varchar2(36) NOT NULL,
   PRIMARY KEY (ID),
   CONSTRAINT UK_ASN_SUBMISSION UNIQUE (SUBMISSION_ID,SUBMITTER),
@@ -613,9 +612,7 @@ CREATE SEQUENCE ASN_SUBMISSION_SUBMITTERS_S;
 -- END NEW ASSIGNMENTS TABLES
 --
 
---
--- BEGIN NEW COMMONS TOOL TABLES
---
+-- SAK-32642 Commons Tools
 
 CREATE TABLE COMMONS_COMMENT (
   ID varchar2(36) NOT NULL,
@@ -655,13 +652,9 @@ CREATE TABLE COMMONS_POST (
 
 CREATE INDEX IDX_COMMONS_POST_CREATOR ON COMMONS_POST(CREATOR_ID);
 
---
--- END NEW COMMONS TOOL TABLES
---
+-- END SAK-32642
 
---
--- SAM-2970 
---
+-- SAM-2970 Extended Time
 
 CREATE TABLE SAM_EXTENDEDTIME_T (
   ID number NOT NULL,
@@ -684,9 +677,14 @@ CREATE INDEX IDX_EXTENDEDTIME_ASSESMENT_PID ON SAM_EXTENDEDTIME_T(PUB_ASSESSMENT
 
 CREATE SEQUENCE SAM_EXTENDEDTIME_S;
 
---
--- SAM-3115
---
+-- END SAM-2970
+
+
+-- SAM-3115 Tags and Search in Samigo
+
+ALTER TABLE SAM_ITEM_T ADD HASH varchar(255) DEFAULT NULL;
+ALTER TABLE SAM_PUBLISHEDITEM_T ADD HASH varchar(255) DEFAULT NULL;
+ALTER TABLE SAM_PUBLISHEDITEM_T ADD ITEMHASH varchar(255) DEFAULT NULL;
 
 CREATE TABLE SAM_ITEMTAG_T (
   ITEMTAGID number NOT NULL,
@@ -718,9 +716,10 @@ CREATE INDEX SAM_PUBLISHEDITEMTAG_ITEMID_I ON SAM_PUBLISHEDITEMTAG_T(ITEMID);
 
 CREATE SEQUENCE SAM_PITEMTAG_ID_S;
 
---
--- SAK-31819
---
+
+--END SAM-3115
+
+-- SAK-31819 Quartz scheduler
 
 CREATE TABLE context_mapping (
   uuid varchar2(255) NOT NULL,
@@ -730,6 +729,8 @@ CREATE TABLE context_mapping (
   CONSTRAINT UK_CONTEXT_MAPPING UNIQUE (componentId,contextId)
 );
 
+-- END SAK-31819
+
 -- SAK-SAK-33772 - Add LTI 1.3 Data model items
 
 ALTER TABLE lti_content ADD lti13 NUMBER(2) DEFAULT '0';
@@ -738,3 +739,55 @@ ALTER TABLE lti_tools ADD lti13 NUMBER(2) DEFAULT '0';
 ALTER TABLE lti_tools ADD lti13_settings CLOB DEFAULT NULL;
 
 -- END SAK-33772
+
+-- SAK-32173 Syllabus remove open in new window option
+
+ALTER TABLE SAKAI_SYLLABUS_ITEM DROP COLUMN openInNewWindow;
+
+-- END SAK-33173 
+
+-- SAK-33896  Remove site manage site association code
+DROP TABLE SITEASSOC_CONTEXT_ASSOCIATION;
+
+--END SAK-33896 
+
+--
+-- SAM-3346 and LSNBLDR-924
+--
+declare
+    type ObjNames is table of varchar2(100);
+    sequences ObjNames := ObjNames('LESSON_BUILDER_PAGE_S',
+        'LESSON_BUILDER_COMMENTS_S',
+        'LESSON_BUILDER_GROUPS_S',
+        'LESSON_BUILDER_ITEMS_S',
+        'LESSON_BUILDER_PROP_S',
+        'LESSON_BUILDER_QR_S',
+        'LESSON_BUILDER_STPAGE_S',
+        'LESSON_BUILDER_LOG_S',
+        'LESSON_BUILDER_QRES_S',
+        'SAM_FAVORITECOLCHOICES_S','SAM_FAVORITECOLCHOICESITEM_S');
+    tablenames ObjNames := ObjNames('lesson_builder_pages',
+        'lesson_builder_comments',
+        'lesson_builder_groups',
+        'lesson_builder_items',
+        'lesson_builder_properties',
+        'lesson_builder_qr_totals',
+        'lesson_builder_student_pages',
+        'lesson_builder_log',
+        'lesson_builder_q_responses',
+        'SAM_FAVORITECOLCHOICES_T','SAM_FAVORITECOLCHOICESITEM_T');
+    tablecolumns ObjNames := ObjNames('pageId',
+        'id','id','id','id','id','id','id','id',
+        'favoriteId','favoriteItemId');
+    lnum number(10);
+    stc varchar2(1000);
+begin
+    for i in sequences.first .. sequences.last
+    loop
+        stc := 'select nvl(max('||tablecolumns(i)||'),0)+1 from '||tablenames(i);
+        execute immediate stc into lnum;
+        stc := 'create sequence '||sequences(i)||' start with '||lnum;
+        --dbms_output.put_line(stc);
+        execute immediate stc;
+    end loop;
+end;
