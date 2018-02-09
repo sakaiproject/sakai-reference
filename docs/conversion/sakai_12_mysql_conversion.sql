@@ -34,6 +34,20 @@ CREATE TABLE CONTENTREVIEW_ITEM_PROPERTIES (
   CONSTRAINT FOREIGN KEY (CONTENTREVIEW_ITEM_ID) REFERENCES CONTENTREVIEW_ITEM (id)
 );
 
+-- CONTENTREVIEW_ITEM.PROVIDERID
+-- Possible Provider Ids 
+-- Compilatio = 1372282923
+-- Turnitin = 199481773
+-- VeriCite = 1930781763
+-- Urkund = 1752904483
+
+-- *** IMPORTANT ***
+-- If you have used CONTENT REVIEW previously then you may need to run the following:
+-- ALTER TABLE CONTENTREVIEW_ITEM ADD COLUMN PROVIDERID INT NOT NULL;
+-- If you have used multiple content review implementations then you will need to update the correct providerid with the matching content review items
+-- Example where only Turnitin was configured:
+-- UPDATE CONTENTREVIEW_ITEM SET PROVIDERID = 199481773;
+
 -- END SAK-33723
 
 -- 
