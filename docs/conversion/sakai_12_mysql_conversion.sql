@@ -381,9 +381,13 @@ execute stmt;
 drop table IF EXISTS lti_mapping;
 -- END SAK-32442
 
--- SAK-32572 Additional permission settings for Messages
+-- SAK-32572  SAK-33910 Additional permission settings for Messages and Rubrics
 
 INSERT INTO SAKAI_REALM_FUNCTION VALUES (DEFAULT, 'msg.permissions.allowToField.myGroupRoles');
+INSERT INTO SAKAI_REALM_FUNCTION VALUES (DEFAULT, 'rbcs.evaluee');
+INSERT INTO SAKAI_REALM_FUNCTION VALUES (DEFAULT, 'rbcs.evaluator');
+INSERT INTO SAKAI_REALM_FUNCTION VALUES (DEFAULT, 'rbcs.associator');
+INSERT INTO SAKAI_REALM_FUNCTION VALUES (DEFAULT, 'rbcs.editor');
 
 -- The permission above is false for all users by default
 -- if you want to turn this feature on for all "student/acces" type roles, then run 
@@ -631,7 +635,7 @@ CREATE TABLE SAM_PUBLISHEDITEMTAG_T (
 );
 
 
---END SAM-3115
+-- END SAM-3115
 
 -- SAK-32173 Syllabus remove open in new window option
 
@@ -642,7 +646,7 @@ ALTER TABLE SAKAI_SYLLABUS_ITEM DROP COLUMN openInNewWindow;
 -- SAK-33896  Remove site manage site association code
 DROP TABLE IF EXISTS SITEASSOC_CONTEXT_ASSOCIATIO;
 
---END SAK-33896 
+-- END SAK-33896 
 
 CREATE TABLE ASN_ASSIGNMENT (
     ASSIGNMENT_ID                  VARCHAR(36) NOT NULL,
