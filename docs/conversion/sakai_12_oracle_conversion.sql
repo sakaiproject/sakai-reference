@@ -371,8 +371,12 @@ alter table lti_tools drop column allowlori;
 drop table lti_mapping
 -- END SAK-32442
 
--- SAK-32572 Additional permission settings for Messages
+-- SAK-32572  SAK-33910 Additional permission settings for Messages and Rubrics
 INSERT INTO SAKAI_REALM_FUNCTION VALUES (SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'msg.permissions.allowToField.myGroupRoles');
+INSERT INTO SAKAI_REALM_FUNCTION VALUES (SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'rbcs.evaluee');
+INSERT INTO SAKAI_REALM_FUNCTION VALUES (SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'rbcs.evaluator');
+INSERT INTO SAKAI_REALM_FUNCTION VALUES (SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'rbcs.associator');
+INSERT INTO SAKAI_REALM_FUNCTION VALUES (SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'rbcs.editor');
 
 --The permission above is false for all users by default
 --if you want to turn this feature on for all "student/acces" type roles, then run 
