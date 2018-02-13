@@ -479,8 +479,8 @@ CREATE INDEX user_audits_log_index on user_audits_log (site_id);
 -- END SAK-33430
 
 -- SAK-33406 - Allow reorder of LTI plugin tools
-alter table lti_tools add toolorder NUMBER(2) DEFAULT '0';
-alter table lti_content add toolorder NUMBER(2) DEFAULT '0';
+alter table lti_tools add toolorder NUMBER(11) DEFAULT '0';
+alter table lti_content add toolorder NUMBER(11) DEFAULT '0';
 -- END SAK-33406
 
 -- SAK-32440 
@@ -807,3 +807,20 @@ begin
         execute immediate stc;
     end loop;
 end;
+
+-- KNL-945 Hibernate changes
+
+ALTER TABLE CHAT2_MESSAGE MODIFY CHANNEL_ID varchar2(36);
+ALTER TABLE CHAT2_MESSAGE MODIFY MESSAGE_ID varchar2(36);
+ALTER TABLE CHAT2_CHANNEL MODIFY CHANNEL_ID varchar2(36);
+
+ALTER TABLE SAKAI_SESSION MODIFY SESSION_SERVER varchar2(255);
+
+-- END KNL-945
+
+-- KNL-1566
+
+ALTER TABLE SAKAI_USER MODIFY MODIFIEDON TIMESTAMP NOT NULL;
+ALTER TABLE SAKAI_USER MODIFY CREATEDON TIMESTAMP NOT NULL;
+
+-- END KNL-1566
