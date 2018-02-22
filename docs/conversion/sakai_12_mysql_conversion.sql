@@ -495,11 +495,14 @@ ALTER TABLE user_audits_log
 -- END SAK-33430
 
 -- SAK-33406 - Allow reorder of LTI plugin tools
-
 ALTER TABLE lti_tools ADD toolorder int(11) DEFAULT '0';
 ALTER TABLE lti_content ADD toolorder int(11) DEFAULT '0';
-
 -- END SAK-33406
+
+-- SAK-33898
+ALTER TABLE lti_content ADD sha256 TINYINT DEFAULT '0'
+ALTER TABLE lti_tools ADD sha256 TINYINT DEFAULT '0'
+-- END SAK-33898
 
 -- BEGIN SAK-32045 -- Update My Workspace to My Home
 UPDATE SAKAI_SITE
