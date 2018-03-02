@@ -500,8 +500,8 @@ ALTER TABLE lti_content ADD toolorder int(11) DEFAULT '0';
 -- END SAK-33406
 
 -- SAK-33898
-ALTER TABLE lti_content ADD sha256 TINYINT DEFAULT '0'
-ALTER TABLE lti_tools ADD sha256 TINYINT DEFAULT '0'
+ALTER TABLE lti_content ADD sha256 TINYINT DEFAULT '0';
+ALTER TABLE lti_tools ADD sha256 TINYINT DEFAULT '0';
 -- END SAK-33898
 
 -- BEGIN SAK-32045 -- Update My Workspace to My Home

@@ -484,8 +484,8 @@ alter table lti_content add toolorder NUMBER(11) DEFAULT '0';
 -- END SAK-33406
 
 -- SAK-33898
-ALTER TABLE lti_content ADD sha256 NUMBER(2) DEFAULT '0'
-ALTER TABLE lti_tools ADD sha256 NUMBER(2) DEFAULT '0'
+ALTER TABLE lti_content ADD sha256 NUMBER(2) DEFAULT '0';
+ALTER TABLE lti_tools ADD sha256 NUMBER(2) DEFAULT '0';
 -- END SAK-33898
 
 -- SAK-32440 
