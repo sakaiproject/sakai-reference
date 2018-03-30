@@ -1,3 +1,7 @@
+-- After running these conversions and starting your system you must run the Assignment Conversion Job or you will not have assignments.
+-- Please see https://github.com/sakaiproject/sakai/blob/12.x/assignment/impl/src/java/org/sakaiproject/assignment/impl/conversion/README.md
+-- For additional information!
+
 -- SAM-3016
 ALTER TABLE SAM_EVENTLOG_T ADD IPADDRESS varchar(99);
 
