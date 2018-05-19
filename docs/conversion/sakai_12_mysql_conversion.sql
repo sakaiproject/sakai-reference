@@ -379,7 +379,7 @@ set @exist_Check := (
     and COLUMN_NAME='allowlori' 
     and TABLE_SCHEMA=database()
 ) ;
-set @sqlstmt := if(@exist_Check>0,'alter table lti_tools drop column allowlori', 'select ''''') ;
+set @sqlstmt := if(@exist_Check>0,'alter table lti_deploy drop column allowlori', 'select ''''') ;
 prepare stmt from @sqlstmt ;
 execute stmt;
 
