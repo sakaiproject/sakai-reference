@@ -19,3 +19,10 @@ CREATE INDEX contentreview_provider_id_idx on CONTENTREVIEW_ITEM (providerId, ex
 -- SAK-40721
 ALTER TABLE BULLHORN_ALERTS ADD COLUMN DEFERRED BIT(1) NOT NULL;
 -- END SAK-40721
+
+-- SAK-41017
+
+UPDATE SAKAI_SITE_PAGE SET layout = '0' WHERE page_id = '!error-100';
+UPDATE SAKAI_SITE_PAGE SET layout = '0' WHERE page_id = '!urlError-100';
+
+-- End of SAK-41017
