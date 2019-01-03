@@ -21,7 +21,7 @@ Translation, internationalization and localization of the Sakai project are coor
 
 ### Basque
 
-| Status | Supported [70% - 90%](https://www.transifex.com/apereo/sakai-trunk/)|
+| Status | Supported [80% - 90%](https://www.transifex.com/apereo/sakai-trunk/)|
 | ------ | ------ |
 | Translated by | [Universidad Pública de Navarra](http://www.unavarra.es/) |
 | Contact | [Pablo San Roman](mailto:pablo.sanroman@unavarra.es) |
@@ -50,13 +50,6 @@ Translation, internationalization and localization of the Sakai project are coor
 | Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
 | Local ID | fr_FR |
 
-### French (Canadian)
-
-| Status | Unverified|
-| ------ | ------ |
-| Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | fr_CA |
-
 ### Persian (Iran)
 
 | Status | Unverified|
@@ -81,35 +74,6 @@ Translation, internationalization and localization of the Sakai project are coor
 |Contact|[Emrah Emirtekin](mailto:eemirtekin@gmail.com)|
 | Local ID | tr_TR |
 
-### Korean
-
-| Status | Unverified|
-| ------ | ------ |
-| Translated by | Il-hwan Kim |
-| Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | ko_KR |
-
-### Dutch
-
-| Status | Unverified|
-| ------ | ------ |
-| Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | nl_NL |
-
-### Danish
-
-| Status | Unverified|
-| ------ | ------ |
-| Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | da_DK |
-
-### Hebrew
-
-| Status | Unverified|
-| ------ | ------ |
-| Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | iw_IL |
-
 ### Brazilian Portuguese
 
 | Status | Unverified|
@@ -118,109 +82,23 @@ Translation, internationalization and localization of the Sakai project are coor
 | Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
 | Local ID | pt_BR |
 
-### Portuguese
-
-| Status | Unverified|
-| ------ | ------ |
-| Translated by | [Nuno Fernandes](http://elearning.ufp.pt) |
-| Contact | [Feliz Gouveia](mailto:fribeiro@ufp.pt) |
-| Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | pt_PT |
-
-### Slovakian
-
-| Status | Unverified|
-| ------ | ------ |
-| Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | sk_SK |
-
-### Chinese/Traditional (Taiwan)
-
-| Status | Unverified|
-| ------ | ------ |
-| Translated by | Ivan Ho |
-| Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | zh_TW |
-
-### Spanish (Mexico)
-
-| Status | Unverified|
-| ------ | ------ |
-| Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | es_MX |
-
-### Spanish (Argentina)
-
-| Status | Unverified|
-| ------ | ------ |
-| Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | es_AR |
-
-### Spanish (Chile)
-
-| Status | Unverified|
-| ------ | ------ |
-| Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | es_CL |
-
-### Russian
-
-| Status | Unverified|
-| ------ | ------ |
-| Translated by | [Alexander Glebovsky](mailto:glebovsky@rambler.ru) |
-| Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | ru_RU |
-
-### German
-
-| Status | Unverified|
-| ------ | ------ |
-| Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | de_AT |
-
 ### Mongolian
-
 | Status | Unverified|
 | ------ | ------ |
 | Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
 | Local ID | mn_MN |
 
-### Arabic
-
+### Hindi
 | Status | Unverified|
 | ------ | ------ |
 | Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | ar |
+| Local ID | hi_IN |
 
-### Vietnamese
+### Other languages
 
-| Status | Unverified|
-| ------ | ------ |
-| Contact | [Nguyen Hua Phung](mailto:phung@cse.hcmut.edu.vn) from HCMUT |
-| Local ID | vi_VN |
+Other languages have been declared legacy in Sakai 19 and have been moved to [Sakai Contrib as language packs](https://github.com/sakaicontrib/legacy-language-packs).
 
-### Khmer
-
-| Status | Unverified|
-| ------ | ------ |
-| Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | km_KH |
-
-### English (Australian)
-
-| Status | Unverified|
-| ------ | ------ |
-| Translated by | [Steve Swinsburg](mailto:steve.swinsburg@gmail.com) |
-| Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | en_AU |
-
-### English (British)
-
-| Status | Unverified|
-| ------ | ------ |
-| Translated by | [Steve Swinsburg](mailto:steve.swinsburg@gmail.com) |
-| Contact | [Sakai development](mailto:sakai-dev@apereo.org) |
-| Local ID | en_GB |
+Feel free to contact the [Sakai DEV list](mailto:sakai-dev@apereo) if you wish to include a new language in Sakai.
 
 ## Set the default language of the platform
 
