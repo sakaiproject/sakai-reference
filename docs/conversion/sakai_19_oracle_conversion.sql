@@ -36,3 +36,24 @@ UPDATE SAKAI_SITE_PAGE SET layout = '0' WHERE page_id = '!error-100';
 UPDATE SAKAI_SITE_PAGE SET layout = '0' WHERE page_id = '!urlError-100';
 
 -- End of SAK-41017
+
+-- BEGIN SAK-41172
+CREATE TABLE SAKAI_GROUP_LOCK 
+(
+    GROUP_ID VARCHAR2(99) NOT NULL,
+    ITEM_ID VARCHAR2(200) NOT NULL,
+    LOCK_MODE VARCHAR2(32) NOT NULL,
+    CONSTRAINT SAKAI_GROUP_LOCK_PK PRIMARY KEY (GROUP_ID, ITEM_ID, LOCK_MODE) ENABLE
+);
+-- END SAK-41172
+
+-- BEGIN SAK-41219
+DELETE FROM SAKAI_GROUP_LOCK;
+INSERT INTO SAKAI_GROUP_LOCK (GROUP_ID, ITEM_ID, LOCK_MODE)
+    SELECT GROUP_ID, TRIM(COLUMN_VALUE) VALUE, 'MODIFY'
+    FROM SAKAI_SITE_GROUP_PROPERTY,
+         XMLTABLE(('"' || REPLACE(VALUE, '#:#', '","') || '"'))
+    WHERE NAME ='group_prop_locked_by';
+/*Execute at your own risk, cleans up the rows of sakai_site_group_property after moving them to the new table.*/
+/*DELETE FROM SAKAI_SITE_GROUP_PROPERTY WHERE NAME ='group_prop_locked_by';*/
+-- END SAK-41219
