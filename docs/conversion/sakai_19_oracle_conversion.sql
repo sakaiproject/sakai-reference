@@ -36,3 +36,9 @@ UPDATE SAKAI_SITE_PAGE SET layout = '0' WHERE page_id = '!error-100';
 UPDATE SAKAI_SITE_PAGE SET layout = '0' WHERE page_id = '!urlError-100';
 
 -- End of SAK-41017
+
+-- SAK-41225
+
+DELETE FROM EMAIL_TEMPLATE_ITEM WHERE template_key = 'polls.notifyDeletedOption' AND template_locale='default'
+
+-- End of SAK-41225
