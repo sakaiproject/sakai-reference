@@ -27,6 +27,11 @@ UPDATE SAKAI_SITE_PAGE SET layout = '0' WHERE page_id = '!urlError-100';
 
 -- End of SAK-41017
 
+-- SAK-33855 add settings for display of stats
+ALTER TABLE GB_GRADEBOOK_T ADD COLUMN ASSIGNMENT_STATS_DISPLAYED bit(1) NOT NULL DEFAULT b'1';
+ALTER TABLE GB_GRADEBOOK_T ADD COLUMN COURSE_GRADE_STATS_DISPLAYED bit(1) NOT NULL DEFAULT b'1';
+-- end SAK-33855
+
 -- SAK-41225
 
 DELETE FROM EMAIL_TEMPLATE_ITEM WHERE template_key = 'polls.notifyDeletedOption' AND template_locale='default'
