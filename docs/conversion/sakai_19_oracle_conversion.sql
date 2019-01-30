@@ -42,3 +42,8 @@ ALTER TABLE gb_gradebook_t ADD assignment_stats_displayed NUMBER(1,0) DEFAULT '1
 ALTER TABLE gb_gradebook_t ADD course_grade_stats_displayed NUMBER(1,0) DEFAULT '1' NOT NULL;
 -- end SAK-33855
 
+-- SAK-41225
+
+DELETE FROM EMAIL_TEMPLATE_ITEM WHERE template_key = 'polls.notifyDeletedOption' AND template_locale='default'
+
+-- End of SAK-41225
