@@ -53,3 +53,25 @@ INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where RE
 INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Teaching Assistant'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'rubrics.evaluee'));
 
 -- End SAK-40967
+
+-- SAK-40721
+ALTER TABLE BULLHORN_ALERTS ADD DEFERRED NUMBER(1) DEFAULT 0 NOT NULL;
+-- END SAK-40721
+
+-- SAK-41017
+
+UPDATE SAKAI_SITE_PAGE SET layout = '0' WHERE page_id = '!error-100';
+UPDATE SAKAI_SITE_PAGE SET layout = '0' WHERE page_id = '!urlError-100';
+
+-- End of SAK-41017
+
+-- SAK-33855 add settings for display of stats
+ALTER TABLE gb_gradebook_t ADD assignment_stats_displayed NUMBER(1,0) DEFAULT '1' NOT NULL;
+ALTER TABLE gb_gradebook_t ADD course_grade_stats_displayed NUMBER(1,0) DEFAULT '1' NOT NULL;
+-- end SAK-33855
+
+-- SAK-41225
+
+DELETE FROM EMAIL_TEMPLATE_ITEM WHERE template_key = 'polls.notifyDeletedOption' AND template_locale='default'
+
+-- End of SAK-41225
