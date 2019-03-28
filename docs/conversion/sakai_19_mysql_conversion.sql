@@ -17,9 +17,9 @@ CREATE INDEX contentreview_provider_id_idx on CONTENTREVIEW_ITEM (providerId, ex
 -- End SAK-39967
 
 -- SAK-41021
-ALTER TABLE SIGNUP_TS_ATTENDEES ADD INSCRIPTION_TIME TIMESTAMP;
+ALTER TABLE SIGNUP_TS_ATTENDEES ADD INSCRIPTION_TIME datetime;
 
-ALTER TABLE SIGNUP_TS_WAITINGLIST ADD INSCRIPTION_TIME TIMESTAMP;
+ALTER TABLE SIGNUP_TS_WAITINGLIST ADD INSCRIPTION_TIME datetime;
 
 -- END SAK-41021
 
@@ -45,7 +45,7 @@ INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where RE
 INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Instructor'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'rubrics.associator'));
 INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Instructor'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'rubrics.editor'));
 INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Instructor'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'rubrics.evaluator'));
-INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Instructor'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'rubrics.evaluee'))
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Instructor'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'rubrics.evaluee'));
 INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Teaching Assistant'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'rubrics.evaluator'));
 INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Teaching Assistant'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'rubrics.evaluee'));
 
@@ -68,7 +68,22 @@ ALTER TABLE GB_GRADEBOOK_T ADD COLUMN COURSE_GRADE_STATS_DISPLAYED bit(1) NOT NU
 -- end SAK-33855
 
 -- SAK-41225
-
 DELETE FROM EMAIL_TEMPLATE_ITEM WHERE template_key = 'polls.notifyDeletedOption' AND template_locale='default'
-
 -- End of SAK-41225
+
+ALTER TABLE lti_tools
+  ADD COLUMN allowfa_icon TINYINT DEFAULT 0,
+  ADD COLUMN allowlineitems TINYINT DEFAULT 0,
+  ADD COLUMN rolemap mediumtext,
+  ADD COLUMN lti13_client_id varchar(1024) DEFAULT NULL,
+  ADD COLUMN lti13_tool_public mediumtext,
+  ADD COLUMN lti13_tool_keyset mediumtext,
+  ADD COLUMN lti13_tool_kid varchar(1024) DEFAULT NULL,
+  ADD COLUMN lti13_tool_private mediumtext,
+  ADD COLUMN lti13_platform_public mediumtext,
+  ADD COLUMN lti13_platform_private mediumtext,
+  ADD COLUMN lti13_oidc_endpoint varchar(1024) DEFAULT NULL,
+  ADD COLUMN lti13_oidc_redirect varchar(1024) DEFAULT NULL,
+  ADD COLUMN lti11_launch_type TINYINT DEFAULT 0;
+
+ALTER TABLE lti_deploy ADD COLUMN allowlineitems TINYINT DEFAULT 0;
