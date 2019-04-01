@@ -78,22 +78,22 @@ ALTER TABLE gb_gradebook_t ADD course_grade_stats_displayed NUMBER(1,0) DEFAULT 
 -- end SAK-33855
 
 -- SAK-41225
-DELETE FROM EMAIL_TEMPLATE_ITEM WHERE template_key = 'polls.notifyDeletedOption' AND template_locale='default'
+DELETE FROM EMAIL_TEMPLATE_ITEM WHERE template_key = 'polls.notifyDeletedOption' AND template_locale='default';
 -- End of SAK-41225
 
 ALTER TABLE lti_tools
-  ADD COLUMN allowfa_icon NUMBER(2) DEFAULT '0',
-  ADD COLUMN allowlineitems NUMBER(2) DEFAULT '0',
-  ADD COLUMN rolemap CLOB,
-  ADD COLUMN lti13_client_id varchar2(1024) DEFAULT NULL,
-  ADD COLUMN lti13_tool_public CLOB,
-  ADD COLUMN lti13_tool_keyset CLOB,
-  ADD COLUMN lti13_tool_kid varchar2(1024) DEFAULT NULL,
-  ADD COLUMN lti13_tool_private CLOB,
-  ADD COLUMN lti13_platform_public CLOB,
-  ADD COLUMN lti13_platform_private CLOB,
-  ADD COLUMN lti13_oidc_endpoint varchar2(1024) DEFAULT NULL,
-  ADD COLUMN lti13_oidc_redirect varchar2(1024) DEFAULT NULL,
-  ADD COLUMN lti11_launch_type NUMBER(2) DEFAULT '0';
+  ADD (allowfa_icon NUMBER(1) DEFAULT 0)
+  ADD (allowlineitems NUMBER(1) DEFAULT 0)
+  ADD (rolemap CLOB)
+  ADD (lti13_client_id varchar2(1024) DEFAULT NULL)
+  ADD (lti13_tool_public CLOB)
+  ADD (lti13_tool_keyset CLOB)
+  ADD (lti13_tool_kid varchar2(1024) DEFAULT NULL)
+  ADD (lti13_tool_private CLOB)
+  ADD (lti13_platform_public CLOB)
+  ADD (lti13_platform_private CLOB)
+  ADD (lti13_oidc_endpoint varchar2(1024) DEFAULT NULL)
+  ADD (lti13_oidc_redirect varchar2(1024) DEFAULT NULL)
+  ADD (lti11_launch_type NUMBER(1) DEFAULT 0);
 
-ALTER TABLE lti_deploy ADD COLUMN allowlineitems NUMBER(2) DEFAULT '0';
+ALTER TABLE lti_deploy ADD allowlineitems NUMBER(1) DEFAULT '0';
