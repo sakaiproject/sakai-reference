@@ -55,7 +55,7 @@ ALTER TABLE GB_GRADEBOOK_T ADD COLUMN COURSE_GRADE_STATS_DISPLAYED bit(1) NOT NU
 -- end SAK-33855
 
 -- SAK-41225
-DELETE FROM EMAIL_TEMPLATE_ITEM WHERE template_key = 'polls.notifyDeletedOption' AND template_locale='default'
+DELETE FROM EMAIL_TEMPLATE_ITEM WHERE template_key = 'polls.notifyDeletedOption' AND template_locale='default';
 -- End of SAK-41225
 
 ALTER TABLE lti_tools ADD allowlineitems TINYINT(3) DEFAULT 0 NULL;
