@@ -9,3 +9,11 @@ DROP INDEX FK_8ewbxsplke3c487h0tjujvtm ON ASN_ASSIGNMENT_GROUPS;
 DROP INDEX FK_jg017qxc4pv3mdf07c1xpytb8 ON ASN_SUBMISSION_ATTACHMENTS;
 DROP INDEX FK_3dou5gsqcya4rwwy99l91fofb ON ASN_SUBMISSION_FEEDBACK_ATTACH;
 -- END SAK-41207
+
+-- SAK-41828 remove grade override from submitter when not a group submission
+UPDATE asn_submission_submitter ss
+        JOIN asn_submission s ON (s.SUBMISSION_ID = ss.SUBMISSION_ID)
+        JOIN asn_assignment a ON (s.ASSIGNMENT_ID = a.ASSIGNMENT_ID)
+        SET ss.GRADE = NULL
+        WHERE a.IS_GROUP IS FALSE AND s.grade IS NOT NULL AND ss.grade IS NOT NULL;
+-- END SAK-41828
