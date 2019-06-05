@@ -3,11 +3,11 @@ SAKAI - a community source Collaboration and Learning Environment
 
 The official website for Sakai is:
 
-	http://www.sakaiproject.org
+	https://www.sakailms.org
 	
 The latest release of Sakai can always be found at:
 
-	http://www.sakaiproject.org/release
+	https://www.sakailms.org/release
 	
 To see the institutions involved in the Sakai collaboration and
 their implementation status, see:
