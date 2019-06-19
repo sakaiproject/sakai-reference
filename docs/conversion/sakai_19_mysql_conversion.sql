@@ -220,7 +220,6 @@ ALTER TABLE GB_GRADABLE_OBJECT_T ADD EXTERNAL_DATA LONGTEXT NULL;
 -- for each realm that has a role matching something in this table, we will add to that role the function from this table
 CREATE TABLE PERMISSIONS_SRC_TEMP (ROLE_NAME VARCHAR(99), FUNCTION_NAME VARCHAR(99));
 
-
 INSERT INTO PERMISSIONS_SRC_TEMP VALUES ('maintain','rubrics.associator');
 INSERT INTO PERMISSIONS_SRC_TEMP VALUES ('maintain','rubrics.editor');
 INSERT INTO PERMISSIONS_SRC_TEMP VALUES ('maintain','rubrics.evaluator');
