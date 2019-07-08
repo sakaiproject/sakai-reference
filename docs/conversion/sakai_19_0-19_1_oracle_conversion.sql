@@ -6,12 +6,12 @@ CREATE INDEX UK_3dou5gsqcya4rwwy99l91fofb ON ASN_SUBMISSION_FEEDBACK_ATTACH (SUB
 -- END SAK-41207
 
 -- SAK-41828 remove grade override from submitter when not a group submission
-UPDATE asn_submission_submitter ss
+UPDATE ASN_SUBMISSION_SUBMITTER ss
     SET ss.GRADE = NULL
     WHERE EXISTS
-        ( SELECT 1 FROM asn_submission_submitter ss1
-            JOIN asn_submission s ON (s.SUBMISSION_ID = ss.SUBMISSION_ID)
-            JOIN asn_assignment a ON (s.ASSIGNMENT_ID = a.ASSIGNMENT_ID)
+        ( SELECT 1 FROM ASN_SUBMISSION_SUBMITTER ss1
+            JOIN ASN_SUBMISSION s ON (s.SUBMISSION_ID = ss.SUBMISSION_ID)
+            JOIN ASN_ASSIGNMENT a ON (s.ASSIGNMENT_ID = a.ASSIGNMENT_ID)
             WHERE a.IS_GROUP IS FALSE
                 AND s.grade IS NOT NULL
                 AND ss1.grade IS NOT NULL
