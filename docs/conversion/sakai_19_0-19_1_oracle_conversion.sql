@@ -12,7 +12,7 @@ UPDATE ASN_SUBMISSION_SUBMITTER ss
         ( SELECT 1 FROM ASN_SUBMISSION_SUBMITTER ss1
             JOIN ASN_SUBMISSION s ON (s.SUBMISSION_ID = ss.SUBMISSION_ID)
             JOIN ASN_ASSIGNMENT a ON (s.ASSIGNMENT_ID = a.ASSIGNMENT_ID)
-            WHERE a.IS_GROUP IS FALSE
+            WHERE a.IS_GROUP = 0
                 AND s.grade IS NOT NULL
                 AND ss1.grade IS NOT NULL
         );
