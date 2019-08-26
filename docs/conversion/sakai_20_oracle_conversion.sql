@@ -108,3 +108,15 @@ REFERENCES SAKAI_REALM (REALM_KEY) ) ;
 update GB_CATEGORY_T set IS_EQUAL_WEIGHT_ASSNS = 0 where IS_EQUAL_WEIGHT_ASSNS is null;
 alter table GB_CATEGORY_T modify IS_EQUAL_WEIGHT_ASSNS number(1) default 0 not null;
 -- END SAK-43077
+
+-- SAK-42190 ONEDRIVE
+CREATE TABLE ONEDRIVE_USER (
+  oneDriveUserId VARCHAR2(255) NOT NULL,
+  oneDriveName VARCHAR2(255),
+  refreshToken CLOB,
+  sakaiUserId VARCHAR2(99),
+  token CLOB,
+  PRIMARY KEY (oneDriveUserId)
+);
+-- END SAK-42190 ONEDRIVE
+
