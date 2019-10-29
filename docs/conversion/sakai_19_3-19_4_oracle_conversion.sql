@@ -17,7 +17,7 @@ ALTER TABLE rbc_tool_item_rbc_assoc MODIFY (
    ownerId varchar2(99)
 );
 
-CREATE INDEX rbc_tool_item_owner ON rbc_tool_item_rbc_assoc(toolId, itemId, ownerId)
+CREATE INDEX rbc_tool_item_owner ON rbc_tool_item_rbc_assoc(toolId, itemId, ownerId);
 
 ALTER TABLE rbc_criterion MODIFY (
    ownerType varchar2(99),
