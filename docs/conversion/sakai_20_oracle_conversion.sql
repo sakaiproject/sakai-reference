@@ -102,3 +102,8 @@ ALTER TABLE SAKAI_REALM_LOCKS
 ADD ( FOREIGN KEY (REALM_KEY)
 REFERENCES SAKAI_REALM (REALM_KEY) ) ;
 -- END SAK-41172
+
+-- SAK-43077
+update gb_category_t set is_equal_weight_assns = 0 where is_equal_weight_assns is null;
+alter table gb_category_t modify IS_EQUAL_WEIGHT_ASSNS number(1) default 0 not null;
+-- END SAK-43077
