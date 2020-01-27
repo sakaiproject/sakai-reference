@@ -104,6 +104,6 @@ REFERENCES SAKAI_REALM (REALM_KEY) ) ;
 -- END SAK-41172
 
 -- SAK-43077
-update gb_category_t set is_equal_weight_assns = 0 where is_equal_weight_assns is null;
-alter table gb_category_t modify IS_EQUAL_WEIGHT_ASSNS number(1) default 0 not null;
+update GB_CATEGORY_T set IS_EQUAL_WEIGHT_ASSNS = 0 where IS_EQUAL_WEIGHT_ASSNS is null;
+alter table GB_CATEGORY_T modify IS_EQUAL_WEIGHT_ASSNS number(1) default 0 not null;
 -- END SAK-43077
