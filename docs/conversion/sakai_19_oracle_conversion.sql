@@ -1,3 +1,6 @@
+-- Gradbook Classic tool removed in 19, move tool reference to Gradebook NG
+UPDATE SAKAI_SITE_TOOL set REGISTRATION='sakai.gradebookng' where REGISTRATION='sakai.gradebook.tool';
+
 -- SAK-38427
 
 ALTER TABLE MFR_TOPIC_T ADD ALLOW_EMAIL_NOTIFICATIONS NUMBER(1,0) DEFAULT 1 NOT NULL;
