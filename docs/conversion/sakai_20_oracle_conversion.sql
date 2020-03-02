@@ -40,7 +40,6 @@ INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where RE
 INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Student'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'sitestats.usertracking.be.tracked'));
 
 CREATE TABLE PERMISSIONS_SRC_TEMP (ROLE_NAME VARCHAR(99), FUNCTION_NAME VARCHAR(99));
-
 INSERT INTO PERMISSIONS_SRC_TEMP VALUES ('maintain','sitestats.usertracking.track');
 INSERT INTO PERMISSIONS_SRC_TEMP VALUES ('access','sitestats.usertracking.be.tracked');
 INSERT INTO PERMISSIONS_SRC_TEMP VALUES ('Instructor','sitestats.usertracking.track');
@@ -69,7 +68,6 @@ FROM
 
 DROP TABLE PERMISSIONS_TEMP;
 DROP TABLE PERMISSIONS_SRC_TEMP;
-
 -- End User Activity
 
 -- SAK-34741
