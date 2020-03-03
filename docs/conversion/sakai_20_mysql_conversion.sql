@@ -115,3 +115,14 @@ CREATE TABLE ONEDRIVE_USER (
 );
 -- END SAK-42190 ONEDRIVE
 
+-- SAK-42423 GOOGLEDRIVE
+CREATE TABLE GOOGLEDRIVE_USER (
+  sakaiUserId varchar(99) NOT NULL,
+  googleDriveName varchar(255) DEFAULT NULL,
+  refreshToken longtext,
+  googleDriveUserId varchar(255) DEFAULT NULL,
+  token longtext,
+  PRIMARY KEY (sakaiUserId),
+  UNIQUE (googleDriveUserId)
+);
+-- END SAK-42423 GOOGLEDRIVE
