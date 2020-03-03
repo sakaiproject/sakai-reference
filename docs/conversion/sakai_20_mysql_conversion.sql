@@ -104,6 +104,17 @@ update GB_CATEGORY_T set IS_EQUAL_WEIGHT_ASSNS = false where IS_EQUAL_WEIGHT_ASS
 alter table GB_CATEGORY_T modify IS_EQUAL_WEIGHT_ASSNS bit not null default false;
 -- END SAK-43077
 
+-- SAK-42190 ONEDRIVE
+CREATE TABLE ONEDRIVE_USER (
+  oneDriveUserId varchar(255) NOT NULL,
+  oneDriveName varchar(255) DEFAULT NULL,
+  refreshToken longtext,
+  sakaiUserId varchar(99) DEFAULT NULL,
+  token longtext,
+  PRIMARY KEY (oneDriveUserId)
+);
+-- END SAK-42190 ONEDRIVE
+
 -- SAK-42423 GOOGLEDRIVE
 CREATE TABLE GOOGLEDRIVE_USER (
   sakaiUserId varchar(99) NOT NULL,
