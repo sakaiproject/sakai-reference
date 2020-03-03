@@ -109,3 +109,27 @@ ALTER TABLE ASN_SUBMISSION ADD COLUMN PRIVATE_NOTES longtext NULL;
 -- END SAK-42474
 
 ALTER TABLE GB_GRADE_RECORD_T DROP COLUMN EXCLUDED;
+
+-- SAK-42190 ONEDRIVE
+CREATE TABLE ONEDRIVE_USER (
+  oneDriveUserId varchar(255) NOT NULL,
+  oneDriveName varchar(255) DEFAULT NULL,
+  refreshToken longtext,
+  sakaiUserId varchar(99) DEFAULT NULL,
+  token longtext,
+  PRIMARY KEY (oneDriveUserId)
+);
+-- END SAK-42190 ONEDRIVE
+
+-- SAK-42423 GOOGLEDRIVE
+CREATE TABLE GOOGLEDRIVE_USER (
+  sakaiUserId varchar(99) NOT NULL,
+  googleDriveName varchar(255) DEFAULT NULL,
+  refreshToken longtext,
+  googleDriveUserId varchar(255) DEFAULT NULL,
+  token longtext,
+  PRIMARY KEY (sakaiUserId),
+  UNIQUE (googleDriveUserId)
+);
+-- END SAK-42423 GOOGLEDRIVE
+
