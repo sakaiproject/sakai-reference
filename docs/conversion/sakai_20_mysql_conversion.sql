@@ -122,7 +122,7 @@ BEGIN
         INSERT INTO SAKAI_REALM_LOCKS (REALM_KEY, REFERENCE, LOCK_MODE)
             SELECT (SELECT REALM_KEY FROM SAKAI_REALM WHERE REALM_ID = (SELECT CONCAT_WS('/', '/site', SITE_ID, 'group', GROUP_ID))),
                    CONCAT('/assignment/a/', SITE_ID, '/', SUBSTRING_INDEX(SPLITASSIGNMENTREFERENCES(VALUE, I), '/', -1)),
-                   3
+                   1
             FROM SAKAI_SITE_GROUP_PROPERTY
             WHERE SPLITASSIGNMENTREFERENCES(VALUE, I) IS NOT NULL AND NAME='group_prop_locked_by';
         SET I = I + 1;
