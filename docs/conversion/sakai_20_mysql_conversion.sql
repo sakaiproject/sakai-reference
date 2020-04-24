@@ -177,3 +177,20 @@ CREATE TABLE GOOGLEDRIVE_USER (
 -- START SAK-41812
 ALTER TABLE SAKAI_PERSON_T ADD COLUMN PHONETIC_PRONUNCIATION varchar(255) DEFAULT NULL;
 -- END SAK-41812
+
+-- START SAK-43441
+CREATE TEMPORARY TABLE messages_with_rubric AS
+    SELECT CONCAT(m.CREATED_BY, ".", m.UUID) evaluated_item_id, m.CREATED_BY evaluee, re.association_id messageAssociationId, m.GRADEASSIGNMENTNAME gbItemId
+        FROM MFR_MESSAGE_T m
+        INNER JOIN rbc_evaluation re ON re.evaluated_item_id = CONCAT(m.CREATED_BY, ".", m.UUID)
+        WHERE m.GRADEASSIGNMENTNAME IS NOT NULL;
+
+UPDATE IGNORE rbc_evaluation re
+    INNER JOIN messages_with_rubric mwr ON re.evaluated_item_id = mwr.evaluated_item_id
+    INNER JOIN rbc_tool_item_rbc_assoc ra ON mwr.gbItemId = ra.itemId
+        SET association_id = ra.id
+        ,re.evaluated_item_id = CONCAT(mwr.gbItemId, ".", mwr.evaluee)
+        WHERE association_id = messageAssociationId;
+
+DROP TABLE messages_with_rubric;
+-- END SAK-43441
