@@ -143,3 +143,6 @@ CREATE TABLE GOOGLEDRIVE_USER (
 ALTER TABLE SAKAI_PERSON_T ADD PHONETIC_PRONUNCIATION VARCHAR2(255) DEFAULT NULL;
 -- END SAK-41812
 
+-- START SAK-41502: Excusing an individual grade should be reflected in score's Grade Log
+ALTER TABLE GB_GRADING_EVENT_T ADD IS_EXCLUDED NUMBER(1,0);
+-- END SAK-41502: Excusing an individual grade should be reflected in score's Grade Log
