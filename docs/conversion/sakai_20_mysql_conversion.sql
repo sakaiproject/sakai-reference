@@ -198,5 +198,5 @@ DROP TABLE messages_with_rubric;
 -- END SAK-43441
 
 -- START SAK-41502: Excusing an individual grade should be reflected in score's Grade Log
-ALTER TABLE GB_GRADING_EVENT_T ADD IS_EXCLUDED INTEGER;
+ALTER TABLE GB_GRADING_EVENT_T ADD IS_EXCLUDED INTEGER NOT NULL DEFAULT 0;
 -- END SAK-41502: Excusing an individual grade should be reflected in score's Grade Log
