@@ -129,7 +129,8 @@ BEGIN
                    CONCAT('/assignment/a/', SITE_ID, '/', SUBSTRING_INDEX(SPLITASSIGNMENTREFERENCES(VALUE, I), '/', -1)),
                    1
             FROM SAKAI_SITE_GROUP_PROPERTY
-            WHERE SPLITASSIGNMENTREFERENCES(VALUE, I) IS NOT NULL AND NAME='group_prop_locked_by';
+            WHERE SPLITASSIGNMENTREFERENCES(VALUE, I) IS NOT NULL AND NAME='group_prop_locked_by'
+            ON DUPLICATE KEY UPDATE REALM_KEY = REALM_KEY;
         SET I = I + 1;
     UNTIL ROW_COUNT() = 0
         END REPEAT;
