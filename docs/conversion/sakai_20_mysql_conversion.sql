@@ -197,3 +197,8 @@ UPDATE IGNORE rbc_evaluation re
 
 DROP TABLE messages_with_rubric;
 -- END SAK-43441
+
+-- SAK-42371
+ALTER TABLE rbc_evaluation ADD status INT NOT NULL;
+UPDATE rbc_evaluation SET status = 2 WHERE status = 0;
+-- END SAK-42371
