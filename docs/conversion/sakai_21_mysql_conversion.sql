@@ -19,3 +19,8 @@ ALTER TABLE rbc_criterion ADD COLUMN WEIGHT DOUBLE NULL DEFAULT 0;
 -- Existing records needed to be switched on right before the feature is used
 UPDATE lti_tools SET pl_lessonsselection = 1;
 -- END SAK-44637
+
+-- SAK-44055 - IMS LTI Advantage Autoprovision
+ALTER TABLE lti_tools ADD lti13_auto_token VARCHAR(1024);
+ALTER TABLE lti_tools ADD lti13_auto_state INT;
+ALTER TABLE lti_tools ADD lti13_auto_registration MEDIUMTEXT;
