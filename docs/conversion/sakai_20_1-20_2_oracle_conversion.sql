@@ -15,3 +15,7 @@ ALTER TABLE lti_tools ADD pl_lessonsselection NUMBER(1) DEFAULT 0;
 -- Existing records needed to be switched on
 UPDATE lti_tools SET pl_lessonsselection = 1;
 -- END SAK-44636
+
+-- SAK-44753
+alter table rbc_tool_item_rbc_assoc add constraint UKq4btc0dfymi80bb5mp3vp3r7u unique (rubric_id, toolId, itemId);
+-- END SAK-44753
