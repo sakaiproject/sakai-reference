@@ -19,3 +19,6 @@ ALTER TABLE rbc_criterion ADD COLUMN WEIGHT DOUBLE NULL DEFAULT 0;
 -- Existing records needed to be switched on right before the feature is used
 UPDATE lti_tools SET pl_lessonsselection = 1;
 -- END SAK-44637
+
+-- SAK-44787 - Add the field early - code that uses this will come later
+ALTER TABLE lti_tools ADD     pl_coursenav TINYINT DEFAULT '0'
