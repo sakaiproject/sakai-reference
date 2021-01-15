@@ -19,3 +19,13 @@ ALTER TABLE rbc_criterion ADD COLUMN WEIGHT DOUBLE NULL DEFAULT 0;
 -- Existing records needed to be switched on right before the feature is used
 UPDATE lti_tools SET pl_lessonsselection = 1;
 -- END SAK-44637
+
+-- SAK-44810 - Add $Resource.id.history
+-- This needs to rename a column in the DB because of a bug that keeps "settings"
+-- from working as needed for this feature.
+ALTER TABLE lti_tools RENAME COLUMN allowsettings TO allowsettings_ext;
+-- If autoDDL somehow already ran and created allowsettings_ext - then you need
+-- to copy data from the old column and delete it
+-- UPDATE lti_tools SET allowsettings_ext=allowsettings;
+-- ALTER TABLE lti_tools DROP COLUMN allowsettings;
+-- END SAK-44810 
