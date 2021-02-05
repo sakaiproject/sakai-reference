@@ -129,7 +129,8 @@ BEGIN
                    CONCAT('/assignment/a/', SITE_ID, '/', SUBSTRING_INDEX(SPLITASSIGNMENTREFERENCES(VALUE, I), '/', -1)),
                    1
             FROM SAKAI_SITE_GROUP_PROPERTY
-            WHERE SPLITASSIGNMENTREFERENCES(VALUE, I) IS NOT NULL AND NAME='group_prop_locked_by';
+            WHERE SPLITASSIGNMENTREFERENCES(VALUE, I) IS NOT NULL AND NAME='group_prop_locked_by'
+            ON DUPLICATE KEY UPDATE REALM_KEY = REALM_KEY;
         SET I = I + 1;
     UNTIL ROW_COUNT() = 0
         END REPEAT;
@@ -150,8 +151,6 @@ alter table GB_CATEGORY_T modify IS_EQUAL_WEIGHT_ASSNS bit not null default fals
 -- SAK-42474
 ALTER TABLE ASN_SUBMISSION ADD COLUMN PRIVATE_NOTES longtext NULL;
 -- END SAK-42474
-
-ALTER TABLE GB_GRADE_RECORD_T DROP COLUMN EXCLUDED;
 
 -- SAK-42190 ONEDRIVE
 CREATE TABLE ONEDRIVE_USER (
@@ -200,3 +199,8 @@ DROP TABLE messages_with_rubric;
 -- START SAK-41502: Excusing an individual grade should be reflected in score's Grade Log
 ALTER TABLE GB_GRADING_EVENT_T ADD IS_EXCLUDED INTEGER NOT NULL DEFAULT 0;
 -- END SAK-41502: Excusing an individual grade should be reflected in score's Grade Log
+
+ALTER TABLE rbc_evaluation ADD status INT NOT NULL;
+UPDATE rbc_evaluation SET status = 2 WHERE status = 0;
+-- END SAK-42371
+
