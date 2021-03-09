@@ -4,10 +4,10 @@ UPDATE rbc_evaluation SET status = 2;
 -- END SAK-42371
 
 -- START SAK-45137
-UPDATE rbc_rating SET title = '' WHERE title IS NULL;
+UPDATE rbc_rating SET title = 'Title' WHERE title IS NULL;
 ALTER TABLE rbc_rating MODIFY title VARCHAR2(255) NOT NULL;
 UPDATE rbc_rating SET points = 0 WHERE points IS NULL;
-ALTER TABLE rbc_rating MODIFY points NUMBER NOT NULL;
+ALTER TABLE rbc_rating MODIFY points FLOAT NOT NULL;
 -- END SAK-45137
 
 -- SAK-44810 - Add $Resource.id.history
