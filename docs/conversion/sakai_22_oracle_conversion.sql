@@ -16,3 +16,19 @@ create index MFR_DRAFT_REC_MSG_ID_I on MFR_DRAFT_RECIPIENT_T(DRAFT_MSG_ID);
 
 create sequence MFR_DRAFT_RECIPIENT_S;
 -- End SAK-44305
+
+-- SAK-38691 --
+-- Session start and end are currently being stored in UTC with a local timezone. This conversion
+-- should convert the columns to TIMESTAMP (without time zone) by simply dropping the time zone specified.
+-- Note: I believe this would need to be altered if the session start and end were not stored in UTC and 
+-- needed to be casted from their current time zone to UTC.
+ALTER TABLE SAKAI_SESSION ADD START_TEMP TIMESTAMP NULL;
+UPDATE SAKAI_SESSION SET START_TEMP = SESSION_START;
+ALTER TABLE SAKAI_SESSION DROP COLUMN SESSION_START;
+ALTER TABLE SAKAI_SESSION RENAME START_TEMP TO SESSION_START;
+
+ALTER TABLE SAKAI_SESSION ADD END_TEMP TIMESTAMP NULL;
+UPDATE SAKAI_SESSION SET END_TEMP = SESSION_END;
+ALTER TABLE SAKAI_SESSION DROP COLUMN SESSION_END;
+ALTER TABLE SAKAI_SESSION RENAME END_TEMP TO SESSION_END;
+-- End SAK-38691 --
