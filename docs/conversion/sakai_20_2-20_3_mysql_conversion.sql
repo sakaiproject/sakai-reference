@@ -19,3 +19,7 @@ ALTER TABLE lti_tools RENAME COLUMN allowsettings TO allowsettings_ext;
 -- UPDATE lti_tools SET allowsettings_ext=allowsettings;
 -- ALTER TABLE lti_tools DROP COLUMN allowsettings;
 -- END SAK-44810
+
+-- SAK-41502
+ALTER TABLE GB_GRADING_EVENT_T ADD IS_EXCLUDED INT DEFAULT null NULL;
+-- END SAK-41502
