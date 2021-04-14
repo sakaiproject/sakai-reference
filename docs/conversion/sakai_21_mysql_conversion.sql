@@ -23,7 +23,10 @@ UPDATE lti_tools SET pl_lessonsselection = 1;
 -- SAK-44810 - Add $Resource.id.history
 -- This needs to rename a column in the DB because of a bug that keeps "settings"
 -- from working as needed for this feature.
-ALTER TABLE lti_tools RENAME COLUMN allowsettings TO allowsettings_ext;
+-- MySQL >= 8.0
+-- ALTER TABLE lti_tools RENAME COLUMN allowsettings TO allowsettings_ext;
+-- MySQL <= 8.0
+ALTER TABLE lti_tools CHANGE allowsettings allowsettings_ext TINYINT DEFAULT 0;
 -- If autoDDL somehow already ran and created allowsettings_ext - then you need
 -- to copy data from the old column and delete it
 -- UPDATE lti_tools SET allowsettings_ext=allowsettings;
