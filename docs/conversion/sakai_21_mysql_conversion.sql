@@ -123,7 +123,7 @@ create table USER_TASKS (
 
 CREATE INDEX IDX_USER_TASK ON USER_TASKS (USER_ID, TASK_ID);
 
-ALTER TABLE rbc_tool_item_rbc_assoc ADD active BIT NOT NULL;
+ALTER TABLE rbc_tool_item_rbc_assoc ADD active BIT NOT NULL DEFAULT 1;
 
 ALTER TABLE rbc_tool_item_rbc_assoc DROP KEY UK_q4btc0dfymi80bb5mp3vp3r7u;
 
