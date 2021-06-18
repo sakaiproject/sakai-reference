@@ -19,6 +19,7 @@ create sequence MFR_DRAFT_RECIPIENT_S;
 
 -- SAK-45565
 ALTER TABLE lesson_builder_groups RENAME COLUMN groups TO item_groups;
+ALTER TABLE lesson_builder_items RENAME COLUMN groups TO item_groups;
 ALTER TABLE tasks RENAME COLUMN SYSTEM TO SYSTEM_TASK;
 -- SAK-45565
 
