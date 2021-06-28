@@ -25,7 +25,6 @@ ALTER TABLE tasks RENAME COLUMN SYSTEM TO SYSTEM_TASK;
 
 -- SAK-44967
 ALTER TABLE gb_gradebook_t ADD allow_compare_grades NUMBER(1,0) DEFAULT 0 NOT NULL ;
-ALTER TABLE gb_gradebook_t ADD comparing_display_grades NUMBER(1,0) DEFAULT 0 NOT NULL;
 ALTER TABLE gb_gradebook_t ADD comparing_display_firstnames NUMBER(1,0) DEFAULT 0 NOT NULL;
 ALTER TABLE gb_gradebook_t ADD comparing_display_surnames NUMBER(1,0) DEFAULT 0 NOT NULL;
 ALTER TABLE gb_gradebook_t ADD comparing_display_comments NUMBER(1,0) DEFAULT 0 NOT NULL;
