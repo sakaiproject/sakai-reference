@@ -19,5 +19,16 @@ create sequence MFR_DRAFT_RECIPIENT_S;
 
 -- SAK-45565
 ALTER TABLE lesson_builder_groups RENAME COLUMN groups TO item_groups;
+ALTER TABLE lesson_builder_items RENAME COLUMN groups TO item_groups;
 ALTER TABLE tasks RENAME COLUMN SYSTEM TO SYSTEM_TASK;
 -- SAK-45565
+
+-- SAK-44967
+ALTER TABLE gb_gradebook_t ADD allow_compare_grades NUMBER(1,0) DEFAULT 0 NOT NULL ;
+ALTER TABLE gb_gradebook_t ADD comparing_display_firstnames NUMBER(1,0) DEFAULT 0 NOT NULL;
+ALTER TABLE gb_gradebook_t ADD comparing_display_surnames NUMBER(1,0) DEFAULT 0 NOT NULL;
+ALTER TABLE gb_gradebook_t ADD comparing_display_comments NUMBER(1,0) DEFAULT 0 NOT NULL;
+ALTER TABLE gb_gradebook_t ADD comparing_display_allitems NUMBER(1,0) DEFAULT 0 NOT NULL;
+ALTER TABLE gb_gradebook_t ADD comparing_randomizedata NUMBER(1,0) DEFAULT 0 NOT NULL;
+-- End SAK-44967
+
