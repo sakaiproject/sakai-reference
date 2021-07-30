@@ -1,0 +1,1 @@
+-- No database changes from Sakai 20.4 to 20.5
