@@ -32,3 +32,6 @@ ALTER TABLE gb_gradebook_t ADD comparing_display_allitems NUMBER(1,0) DEFAULT 0 
 ALTER TABLE gb_gradebook_t ADD comparing_randomizedata NUMBER(1,0) DEFAULT 0 NOT NULL;
 -- End SAK-44967
 
+-- SAK-46022
+ALTER TABLE COMMONS_POST ADD PRIORITY NUMBER(1) DEFAULT 0 NOT NULL;
+-- End SAK-46022
