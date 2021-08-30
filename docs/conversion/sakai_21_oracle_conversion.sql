@@ -220,3 +220,14 @@ UPDATE rbc_evaluation SET status = 2;
 -- END SAK-42371
 
 CREATE SEQUENCE BULLHORN_ALERTS_S MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20;
+
+
+-- START SAK-44932
+
+UPDATE gb_grading_scale_t SET NAME = 'letter_grades'      WHERE ID = 1;
+UPDATE gb_grading_scale_t SET NAME = 'letter_grades_plus' WHERE ID = 2;
+UPDATE gb_grading_scale_t SET NAME = 'pass_not_pass'      WHERE ID = 3;
+UPDATE gb_grading_scale_t SET NAME = 'points'             WHERE ID = 4;
+
+-- END SAK-44932
+
