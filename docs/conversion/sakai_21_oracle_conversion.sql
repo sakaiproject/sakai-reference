@@ -9,7 +9,7 @@ ALTER TABLE MFR_PRIVATE_FORUM_T MODIFY AUTO_FORWARD NUMBER(10, 0);
 
 -- SAK-43826 : Rubrics: Support weighted criterions
 
-ALTER TABLE rbc_rubric ADD weighted NUMBER(1, 0) NOT NULL;
+ALTER TABLE rbc_rubric ADD weighted NUMBER(1, 0) DEFAULT 0 NOT NULL;
 ALTER TABLE rbc_criterion ADD weight FLOAT DEFAULT 0;
 
 -- SAK-44637 - Make the Lessons Placement checkbox work
@@ -54,15 +54,15 @@ ALTER TABLE rbc_tool_item_rbc_assoc ADD created TIMESTAMP NULL;
 ALTER TABLE rbc_tool_item_rbc_assoc ADD modified TIMESTAMP NULL;
 
 UPDATE rbc_criterion SET created = current_timestamp WHERE created IS NULL;
-UPDATE rbc_criterion SET modified = current_timestamp WHERE created IS NULL;
+UPDATE rbc_criterion SET modified = current_timestamp WHERE modified IS NULL;
 UPDATE rbc_evaluation SET created = current_timestamp WHERE created IS NULL;
-UPDATE rbc_evaluation SET modified = current_timestamp WHERE created IS NULL;
+UPDATE rbc_evaluation SET modified = current_timestamp WHERE modified IS NULL;
 UPDATE rbc_rating SET created = current_timestamp WHERE created IS NULL;
-UPDATE rbc_rating SET modified = current_timestamp WHERE created IS NULL;
+UPDATE rbc_rating SET modified = current_timestamp WHERE modified IS NULL;
 UPDATE rbc_rubric SET created = current_timestamp WHERE created IS NULL;
-UPDATE rbc_rubric SET modified = current_timestamp WHERE created IS NULL;
+UPDATE rbc_rubric SET modified = current_timestamp WHERE modified IS NULL;
 UPDATE rbc_tool_item_rbc_assoc SET created = current_timestamp WHERE created IS NULL;
-UPDATE rbc_tool_item_rbc_assoc SET modified = current_timestamp WHERE created IS NULL;
+UPDATE rbc_tool_item_rbc_assoc SET modified = current_timestamp WHERE modified IS NULL;
 -- END SAK-45174
 
 -- SAK-44019
@@ -130,9 +130,9 @@ CREATE SEQUENCE USER_TASKS_S MINVALUE 1 MAXVALUE 9999999999999999999999999999 IN
 
 CREATE INDEX IDX_USER_TASK ON USER_TASKS (USER_ID, TASK_ID);
 
-ALTER TABLE rbc_tool_item_rbc_assoc ADD active NUMBER(1,0) NOT NULL DEFAULT 1;
+ALTER TABLE rbc_tool_item_rbc_assoc ADD active NUMBER(1,0) DEFAULT 1 NOT NULL;
 
-ALTER TABLE rbc_tool_item_rbc_assoc DROP CONSTRAINT UK_Q4BTC0DFYMI80BB5MP3VP3R7U;
+ALTER TABLE rbc_tool_item_rbc_assoc DROP CONSTRAINT UKQ4BTC0DFYMI80BB5MP3VP3R7U;
 
 CREATE INDEX FK1yhjvx9pxp5e76ijo0s6ahvsa ON rbc_tool_item_rbc_assoc(rubric_id);
 

@@ -57,15 +57,15 @@ ALTER TABLE rbc_tool_item_rbc_assoc ADD created DATETIME NULL;
 ALTER TABLE rbc_tool_item_rbc_assoc ADD modified DATETIME NULL;
 
 UPDATE rbc_criterion SET created = NOW() WHERE created IS NULL;
-UPDATE rbc_criterion SET modified = NOW() WHERE created IS NULL;
+UPDATE rbc_criterion SET modified = NOW() WHERE modified IS NULL;
 UPDATE rbc_evaluation SET created = NOW() WHERE created IS NULL;
-UPDATE rbc_evaluation SET modified = NOW() WHERE created IS NULL;
+UPDATE rbc_evaluation SET modified = NOW() WHERE modified IS NULL;
 UPDATE rbc_rating SET created = NOW() WHERE created IS NULL;
-UPDATE rbc_rating SET modified = NOW() WHERE created IS NULL;
+UPDATE rbc_rating SET modified = NOW() WHERE modified IS NULL;
 UPDATE rbc_rubric SET created = NOW() WHERE created IS NULL;
-UPDATE rbc_rubric SET modified = NOW() WHERE created IS NULL;
+UPDATE rbc_rubric SET modified = NOW() WHERE modified IS NULL;
 UPDATE rbc_tool_item_rbc_assoc SET created = NOW() WHERE created IS NULL;
-UPDATE rbc_tool_item_rbc_assoc SET modified = NOW() WHERE created IS NULL;
+UPDATE rbc_tool_item_rbc_assoc SET modified = NOW() WHERE modified IS NULL;
 -- END SAK-45174
 
 -- SAK-44019
@@ -129,7 +129,7 @@ ALTER TABLE rbc_tool_item_rbc_assoc DROP KEY UK_q4btc0dfymi80bb5mp3vp3r7u;
 
 CREATE INDEX FK1yhjvx9pxp5e76ijo0s6ahvsa ON rbc_tool_item_rbc_assoc(rubric_id);
 
-ALTER TABLE rbc_tool_item_rbc_assoc DROP KEY UK_q4btc0dfymi80bb5mp3vp3r7u;
+ALTER TABLE rbc_tool_item_rbc_assoc DROP KEY UKq4btc0dfymi80bb5mp3vp3r7u;
 
 DROP INDEX contentreview_provider_id_idx ON CONTENTREVIEW_ITEM;
 
