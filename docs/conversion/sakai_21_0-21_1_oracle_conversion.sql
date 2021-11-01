@@ -16,7 +16,8 @@ ORIGIN VARCHAR2(64) NOT NULL,
 OBJECT VARCHAR2(64) NOT NULL,
 EVENT_SUPPLIER VARCHAR2(64),
 PRIMARY KEY (EVENT));
---Initial data that were in the ifs:
+
+-- Initial data that were in the ifs:
 INSERT INTO TINCANAPI_EVENT (EVENT, VERB, ORIGIN, OBJECT, EVENT_SUPPLIER) VALUES('user.login', 'initialized', 'sakai.system', 'session-started', null);
 INSERT INTO TINCANAPI_EVENT (EVENT, VERB, ORIGIN, OBJECT, EVENT_SUPPLIER) VALUES('user.login.container', 'initialized', 'sakai.system', 'session-started', null);
 INSERT INTO TINCANAPI_EVENT (EVENT, VERB, ORIGIN, OBJECT, EVENT_SUPPLIER) VALUES('user.logout', 'exited', 'sakai.system', 'session-ended', 'logout');
