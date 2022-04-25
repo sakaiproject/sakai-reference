@@ -13,6 +13,12 @@ ALTER TABLE POLL_OPTION ADD OPTION_ORDER INTEGER;
 
 -- END SAK-41391
 
+-- SAK-47205
+-- This will target orphaned poll_option rows that the Backfill poll option order quartz job may miss.
+-- The Backfill poll option order job should be run after applying this conversion
+UPDATE poll_option set option_order = 0 where option_id in (select * from (select a.option_id from poll_option as a left outer join poll_poll as b on a.option_poll_id = b.poll_id where b.poll_id is null) as t);
+-- END SAK-47205
+
 -- SAK-41825
 ALTER TABLE SAM_ASSESSMENTBASE_T ADD CATEGORYID BIGINT(20);
 ALTER TABLE SAM_PUBLISHEDASSESSMENT_T ADD CATEGORYID BIGINT(20);
