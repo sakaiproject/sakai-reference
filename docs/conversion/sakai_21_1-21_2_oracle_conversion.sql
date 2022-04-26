@@ -10,7 +10,7 @@ ALTER TABLE SAKAI_PERSON_T ADD PRONOUNS VARCHAR2(255);
 -- SAK-45491
 ALTER TABLE lti_tools ADD lti13_platform_public_next CLOB;
 ALTER TABLE lti_tools ADD lti13_platform_public_next_at DATE NULL;
-ALTER TABLE lti_tools ADD lti13_platform_private_next CLOB
+ALTER TABLE lti_tools ADD lti13_platform_private_next CLOB;
 -- End SAK-45491
 
 -- Start SAK-45692
