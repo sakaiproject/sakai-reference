@@ -13,3 +13,13 @@ CREATE TABLE TASKS_ASSIGNED
 
 CREATE SEQUENCE TASKS_ASSIGNED_S MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20;
 CREATE INDEX IDX_TASKS_ASSIGNED ON TASKS_ASSIGNED (TASK_ID);
+
+-- SAK-46178
+ALTER TABLE rbc_tool_item_rbc_assoc RENAME COLUMN ownerId TO siteId;
+DROP INDEX rbc_tool_item_owner ON rbc_tool_item_rbc_assoc;
+CREATE INDEX rbc_tool_item_active ON rbc_tool_item_rbc_assoc(toolId, itemId, active);
+ALTER TABLE rbc_criterion ADD order_index NUMBER(1,0) NULL;
+ALTER TABLE rbc_rating ADD order_index NUMBER(1,0) NULL;
+UPDATE rbc_rating r, rbc_criterion_ratings cr SET r.criterion_id = cr.rbc_criterion_id, r.order_index = cr.order_index WHERE cr.ratings_id = r.id;
+UPDATE rbc_criterion c, rbc_rubric_criterions rc SET c.rubric_id = rc.rbc_rubric_id, c.order_index = rc.order_index WHERE rc.criterions_id = c.id;
+-- END SAK-46178
