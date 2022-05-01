@@ -1,3 +1,6 @@
+-- clear unchanged bundle properties
+DELETE SAKAI_MESSAGE_BUNDLE from SAKAI_MESSAGE_BUNDLE where PROP_VALUE is NULL;
+
 -- SAK-46436
 ALTER TABLE TASKS ADD TASK_OWNER VARCHAR2(99 CHAR);
 
@@ -23,3 +26,8 @@ ALTER TABLE rbc_rating ADD order_index NUMBER(1,0) NULL;
 UPDATE rbc_rating r, rbc_criterion_ratings cr SET r.criterion_id = cr.rbc_criterion_id, r.order_index = cr.order_index WHERE cr.ratings_id = r.id;
 UPDATE rbc_criterion c, rbc_rubric_criterions rc SET c.rubric_id = rc.rbc_rubric_id, c.order_index = rc.order_index WHERE rc.criterions_id = c.id;
 -- END SAK-46178
+
+-- SAK-47246
+ALTER TABLE SAKAI_MESSAGE_BUNDLE DROP KEY SMB_SEARCH;
+ALTER TABLE SAKAI_MESSAGE_BUNDLE ADD CONSTRAINT SMB_SEARCH UNIQUE (BASENAME, MODULE_NAME, LOCALE, PROP_NAME);
+-- END SAK-47246
