@@ -11,7 +11,7 @@ CREATE TABLE TASKS_ASSIGNED (
 CREATE INDEX IDX_TASKS_ASSIGNED ON TASKS_ASSIGNED (TASK_ID);
 
 -- SAK-46178
-ALTER TABLE rbc_tool_item_rbc_assoc RENAME COLUMN ownerId TO siteId;
+ALTER TABLE rbc_tool_item_rbc_assoc CHANGE ownerId siteId varchar(99);
 DROP INDEX rbc_tool_item_owner ON rbc_tool_item_rbc_assoc;
 CREATE INDEX rbc_tool_item_active ON rbc_tool_item_rbc_assoc(toolId, itemId, active);
 ALTER TABLE rbc_criterion ADD order_index INT DEFAULT NULL;
