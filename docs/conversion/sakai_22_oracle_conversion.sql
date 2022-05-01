@@ -40,6 +40,33 @@ INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REAL
 INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'dropbox.delete.own');
 INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'dropbox.delete.any');
 
+-- Conversations
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.anonymous.view');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.comment.create');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.comment.delete.any');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.comment.delete.own');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.comment.update.any');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.comment.update.own');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.moderate');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.post.create');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.post.delete.any');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.post.delete.own');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.post.react');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.post.update.any');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.post.update.own');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.post.upvote');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.roletype.instructor');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.statistics.view');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.tag.create');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.topic.create');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.topic.delete.any');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.topic.delete.own');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.topic.pin');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.topic.tag');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.topic.update.any');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.topic.update.own');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'conversations.topic.view.groups');
+
 -- Project sites - maintainers get .any permissions, accessors get .own permissions
 INSERT INTO SAKAI_REALM_RL_FN (REALM_KEY, ROLE_KEY, FUNCTION_KEY) VALUES (
     (SELECT REALM_KEY FROM SAKAI_REALM WHERE REALM_ID = '!site.template'),
@@ -111,6 +138,88 @@ INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Student','dropbox.write.own');
 INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Student','dropbox.delete.own');
 INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Teaching Assistant','dropbox.write.own');
 INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Teaching Assistant','dropbox.delete.own');
+
+-- Conversations
+
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.roletype.instructor');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.moderate');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.topic.create');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.topic.update.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.topic.update.any');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.topic.delete.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.topic.delete.any');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.topic.tag');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.topic.pin');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.tag.create');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.topic.view.groups');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.post.create');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.post.update.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.post.update.any');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.post.delete.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.post.delete.any');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.post.verify');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.post.react');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.post.comment');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.comment.create');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.comment.update.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.comment.update.any');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.comment.delete.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.comment.delete.any');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.statistics.view');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','conversations.anonymous.view');
+
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.roletype.instructor');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.moderate');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.topic.create');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.topic.update.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.topic.update.any');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.topic.delete.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.topic.delete.any');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.topic.tag');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.topic.pin');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.tag.create');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.topic.view.groups');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.post.create');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.post.update.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.post.update.any');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.post.delete.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.post.delete.any');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.post.verify');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.post.react');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.post.comment');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.comment.create');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.comment.update.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.comment.update.any');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.comment.delete.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.comment.delete.any');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.statistics.view');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','conversations.anonymous.view');
+
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Student','conversations.topic.create');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Student','conversations.topic.update.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Student','conversations.topic.delete.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Student','conversations.topic.tag');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Student','conversations.post.create');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Student','conversations.post.update.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Student','conversations.post.delete.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Student','conversations.post.react');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Student','conversations.post.comment');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Student','conversations.comment.create');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Student','conversations.comment.update.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Student','conversations.comment.delete.own');
+
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('access','conversations.topic.create');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('access','conversations.topic.update.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('access','conversations.topic.delete.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('access','conversations.topic.tag');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('access','conversations.post.create');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('access','conversations.post.update.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('access','conversations.post.delete.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('access','conversations.post.react');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('access','conversations.post.comment');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('access','conversations.comment.create');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('access','conversations.comment.update.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('access','conversations.comment.delete.own');
 
 -- lookup the role and function number
 CREATE TABLE PERMISSIONS_TEMP (ROLE_KEY INTEGER, FUNCTION_KEY INTEGER);
