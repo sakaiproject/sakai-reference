@@ -16,7 +16,7 @@ ALTER TABLE POLL_OPTION ADD OPTION_ORDER INTEGER;
 -- SAK-47205
 -- This will target orphaned poll_option rows that the Backfill poll option order quartz job may miss.
 -- The Backfill poll option order job should be run after applying this conversion
-DELETE from POLL_OPTION where OPTION_POLL_ID NOT IN (SELECT POLL_ID FROM POLL_POLL)
+DELETE from POLL_OPTION where OPTION_POLL_ID NOT IN (SELECT POLL_ID FROM POLL_POLL);
 -- END SAK-47205
 
 -- SAK-41825
