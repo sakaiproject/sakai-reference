@@ -42,25 +42,27 @@ CREATE TABLE CONTENTREVIEW_ITEM_PROPERTIES (
 
 --
 -- SAK-31641 Switch from INTs to VARCHARs in Oauth
+-- SAK-46848 - Fix ORA-01439 when the table contains data
 --
-ALTER TABLE oauth_accessors
-MODIFY (
-  status VARCHAR2(255)
-, type VARCHAR2(255)
-);
+ALTER TABLE oauth_accessors ADD ( status_temp VARCHAR2(255), type_temp VARCHAR2(255) );
 
-UPDATE oauth_accessors SET status = CASE
-  WHEN status = 0 THEN 'VALID'
-  WHEN status = 1 THEN 'REVOKED'
-  WHEN status = 2 THEN 'EXPIRED'
-END;
+UPDATE oauth_accessors SET status_temp = 'VALID' where status = 0;
+UPDATE oauth_accessors SET status_temp = 'REVOKED' where status = 1;
+UPDATE oauth_accessors SET status_temp = 'EXPIRED' where status = 2;
 
-UPDATE oauth_accessors SET type = CASE
-  WHEN type = 0 THEN 'REQUEST'
-  WHEN type = 1 THEN 'REQUEST_AUTHORISING'
-  WHEN type = 2 THEN 'REQUEST_AUTHORISED'
-  WHEN type = 3 THEN 'ACCESS'
-END;
+UPDATE oauth_accessors SET type_temp = 'REQUEST' where type = 0;
+UPDATE oauth_accessors SET type_temp = 'REQUEST_AUTHORISING' where type = 1;
+UPDATE oauth_accessors SET type_temp = 'REQUEST_AUTHORISED' where type = 2;
+UPDATE oauth_accessors SET type_temp = 'ACCESS' where type = 3;
+
+UPDATE oauth_accessors SET status = NULL, type = NULL;
+
+ALTER TABLE oauth_accessors MODIFY ( status VARCHAR2(255), type VARCHAR2(255) );
+
+UPDATE oauth_accessors SET status = status_temp, type = type_temp;
+
+ALTER TABLE oauth_accessors DROP COLUMN status_temp;
+ALTER TABLE oauth_accessors DROP COLUMN type_temp;
 
 --
 -- SAK-31636 Rename existing 'Home' tools
@@ -326,7 +328,8 @@ JOIN gb_grading_scale_t gs
 
 -- SAM-1129 Change the column DESCRIPTION of SAM_QUESTIONPOOL_T from VARCHAR2(255) to CLOB
 
-ALTER TABLE SAM_QUESTIONPOOL_T ADD DESCRIPTION_COPY VARCHAR2(255);
+-- SAK-46848 - fix ORA-12899: value too large for column: use VARCHAR2(255 CHAR) instead of VARCHAR2(255)
+ALTER TABLE SAM_QUESTIONPOOL_T ADD DESCRIPTION_COPY VARCHAR2(255 CHAR);
 UPDATE SAM_QUESTIONPOOL_T SET DESCRIPTION_COPY = DESCRIPTION;
 
 UPDATE SAM_QUESTIONPOOL_T SET DESCRIPTION = NULL;
@@ -422,7 +425,7 @@ JOIN SAKAI_REALM_FUNCTION SRF ON (TMPSRC.FUNCTION_NAME = SRF.FUNCTION_NAME);
 -- insert the new function into the roles of any existing realm that has the role (don't convert the "!site.helper")
 INSERT INTO SAKAI_REALM_RL_FN (REALM_KEY, ROLE_KEY, FUNCTION_KEY)
 SELECT
-    SRRFD.REALM_KEY, SRRFD.ROLE_KEY, TMP.FUNCTION_KEY
+    distinct SRRFD.REALM_KEY, SRRFD.ROLE_KEY, TMP.FUNCTION_KEY
 FROM
     (SELECT DISTINCT SRRF.REALM_KEY, SRRF.ROLE_KEY FROM SAKAI_REALM_RL_FN SRRF) SRRFD
     JOIN PERMISSIONS_TEMP TMP ON (SRRFD.ROLE_KEY = TMP.ROLE_KEY)
@@ -443,7 +446,23 @@ DROP TABLE PERMISSIONS_SRC_TEMP;
 -- SAK-33430 user_audits_log is queried against site_id
 ALTER TABLE user_audits_log MODIFY (site_id varchar2(99));
 ALTER TABLE user_audits_log MODIFY (role_name varchar2(99));
-DROP INDEX user_audits_log_index;
+
+-- SAK-46848 - fix ORA-01418
+-- From https://stackoverflow.com/questions/2722630/oracle-drop-index-if-exists
+-- Attempt to drop user_audits_log_index if it was created by name.
+-- Alter the table if the index was auto-generated.
+DECLARE
+    index_not_exists EXCEPTION;
+    PRAGMA EXCEPTION_INIT (index_not_exists, -1418);
+BEGIN
+    EXCECUTE IMMEDIATE 'DROP INDEX user_audits_log_index';
+EXCEPTION
+    WHEN index_not_exists
+    THEN
+        ALTER TABLE user_audits_log DROP PRIMARY KEY DROP INDEX;
+END;
+/
+
 CREATE INDEX user_audits_log_index on user_audits_log (site_id);
 -- END SAK-33430
 
@@ -740,7 +759,7 @@ ALTER TABLE SAKAI_SYLLABUS_ITEM DROP COLUMN openInNewWindow;
 DROP TABLE SITEASSOC_CONTEXT_ASSOCIATION;
 
 --END SAK-33896 
-
+commit;
 --
 -- SAM-3346 and LSNBLDR-924
 --
@@ -781,6 +800,7 @@ begin
         execute immediate stc;
     end loop;
 end;
+/
 
 -- KNL-945 Hibernate changes
 
