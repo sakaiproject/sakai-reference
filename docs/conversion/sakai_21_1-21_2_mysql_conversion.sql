@@ -10,7 +10,7 @@ ALTER TABLE SAKAI_PERSON_T ADD PRONOUNS varchar(255);
 -- SAK-45491
 ALTER TABLE lti_tools ADD lti13_platform_public_next MEDIUMTEXT;
 ALTER TABLE lti_tools ADD lti13_platform_public_next_at DATETIME NULL;
-ALTER TABLE lti_tools ADD lti13_platform_private_next MEDIUMTEXT
+ALTER TABLE lti_tools ADD lti13_platform_private_next MEDIUMTEXT;
 -- End SAK-45491
 
 -- Start SAK-45692
