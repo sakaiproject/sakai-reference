@@ -13,6 +13,12 @@ ALTER TABLE POLL_OPTION ADD OPTION_ORDER NUMBER(10,0);
 
 -- END SAK-41391
 
+-- SAK-47205
+-- This will target orphaned poll_option rows that the Backfill poll option order quartz job may miss.
+-- The Backfill poll option order job should be run after applying this conversion
+DELETE from POLL_OPTION where OPTION_POLL_ID NOT IN (SELECT POLL_ID FROM POLL_POLL);
+-- END SAK-47205
+
 -- SAK-41825
 ALTER TABLE SAM_ASSESSMENTBASE_T ADD COLUMN CATEGORYID NUMBER(19);
 ALTER TABLE SAM_PUBLISHEDASSESSMENT_T ADD COLUMN CATEGORYID NUMBER(19);
