@@ -69,8 +69,8 @@ DROP INDEX rbc_tool_item_owner ON rbc_tool_item_rbc_assoc;
 CREATE INDEX rbc_tool_item_owner ON rbc_tool_item_rbc_assoc (toolId, itemId, siteId);
 
 -- this migrates the data from the link tables
-UPDATE rbc_criterion SET rubric_id = (SELECT rrc.rbc_rubric_id FROM rbc_rubric_criterions rrc WHERE rrc.criterions_id = rbc_criterion.id), order_index = (SELECT rrc.order_index FROM rbc_rubric_criterions rrc WHERE rrc.criterions_id = rbc_criterion.id) WHERE rubric_id is NULL;
-UPDATE rbc_rating SET criterion_id = (SELECT rcr.rbc_criterion_id FROM rbc_criterion_ratings rcr WHERE rcr.ratings_id = rbc_rating.id), order_index = (SELECT rcr.order_index FROM rbc_criterion_ratings rcr WHERE rcr.ratings_id = rbc_rating.id) WHERE criterion_id is NULL;
+UPDATE rbc_criterion rc JOIN rbc_rubric_criterions rrc ON rc.id = rrc.criterions_id SET rc.rubric_id = rrc.rbc_rubric_id, rc.order_index = rrc.order_index WHERE rc.rubric_id is NULL OR rc.order_index is NULL;
+UPDATE rbc_rating rc JOIN rbc_criterion_ratings rcr ON rc.id = rcr.ratings_id SET rc.criterion_id = rcr.rbc_criterion_id, rc.order_index = rcr.order_index WHERE rc.criterion_id is NULL OR rc.order_index is NULL;
 -- once the above conversion is run successfully then the following tables can be dropped
 -- DROP TABLE rbc_criterion_ratings;
 -- DROP TABLE rbc_rubric_criterions;
