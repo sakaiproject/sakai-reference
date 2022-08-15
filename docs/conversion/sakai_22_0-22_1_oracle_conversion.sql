@@ -71,6 +71,7 @@ CREATE INDEX rbc_tool_item_owner ON rbc_tool_item_rbc_assoc (toolId, itemId, sit
 -- this migrates the data from the link tables
 UPDATE rbc_criterion rc JOIN rbc_rubric_criterions rrc ON rc.id = rrc.criterions_id SET rc.rubric_id = rrc.rbc_rubric_id, rc.order_index = rrc.order_index WHERE rc.rubric_id is NULL OR rc.order_index is NULL;
 UPDATE rbc_rating rc JOIN rbc_criterion_ratings rcr ON rc.id = rcr.ratings_id SET rc.criterion_id = rcr.rbc_criterion_id, rc.order_index = rcr.order_index WHERE rc.criterion_id is NULL OR rc.order_index is NULL;
+UPDATE rbc_tool_item_rbc_assoc rti JOIN rbc_rubric rc ON rti.rubric_id = rc.id SET rti.siteId = rc.ownerId WHERE rti.siteId is NULL;
 -- once the above conversion is run successfully then the following tables can be dropped
 -- DROP TABLE rbc_criterion_ratings;
 -- DROP TABLE rbc_rubric_criterions;
