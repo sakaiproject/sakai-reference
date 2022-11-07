@@ -27,3 +27,7 @@ UPDATE rbc_criterion c, rbc_rubric_criterions rc SET c.rubric_id = rc.rbc_rubric
 -- SAK-47784 Rubrics: Save Rubrics as Draft
 ALTER TABLE rbc_rubric ADD draft bit(1) NOT NULL DEFAULT 0;
 -- END SAK-47784
+
+-- SAK-43542 Assignments: Provide more information in Removed Assignments/Trash list
+ALTER TABLE ASN_ASSIGNMENT ADD SOFT_REMOVED_DATE DATETIME DEFAULT NULL;
+-- END SAK-43542
