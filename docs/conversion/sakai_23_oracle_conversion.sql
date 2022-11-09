@@ -32,6 +32,10 @@ UPDATE rbc_criterion c, rbc_rubric_criterions rc SET c.rubric_id = rc.rbc_rubric
 ALTER TABLE rbc_rubric ADD draft NUMBER(1) DEFAULT 0 NOT NULL;
 -- END SAK-47784
 
+-- SAK-43542 Assignments: Provide more information in Removed Assignments/Trash list
+ALTER TABLE ASN_ASSIGNMENT ADD SOFT_REMOVED_DATE TIMESTAMP DEFAULT NULL;
+-- END SAK-43542
+
 -- SAK-47992 START
 INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'roster.viewcandidatedetails');
 
