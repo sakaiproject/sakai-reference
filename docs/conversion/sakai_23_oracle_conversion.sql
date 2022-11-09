@@ -35,3 +35,9 @@ ALTER TABLE rbc_rubric ADD draft NUMBER(1) DEFAULT 0 NOT NULL;
 -- SAK-43542 Assignments: Provide more information in Removed Assignments/Trash list
 ALTER TABLE ASN_ASSIGNMENT ADD SOFT_REMOVED_DATE TIMESTAMP DEFAULT NULL;
 -- END SAK-43542
+
+-- SAK-48034 User Properties: Cannot add user properties to external users (LDAP)
+-- IMPORTANT: Replace SYS_C0013939 by your foreign key name associated to the sakai_user_property table.
+ALTER TABLE SAKAI_USER_PROPERTY DROP FOREIGN KEY SYS_C0013939;
+-- END SAK-48034 User Properties: Cannot add user properties to external users (LDAP)
+

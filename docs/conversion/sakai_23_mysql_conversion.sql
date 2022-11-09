@@ -31,3 +31,8 @@ ALTER TABLE rbc_rubric ADD draft bit(1) NOT NULL DEFAULT 0;
 -- SAK-43542 Assignments: Provide more information in Removed Assignments/Trash list
 ALTER TABLE ASN_ASSIGNMENT ADD SOFT_REMOVED_DATE DATETIME DEFAULT NULL;
 -- END SAK-43542
+
+-- SAK-48034 User Properties can be also assigned to external users.
+-- IMPORTANT: Replace sakai_user_property_ibfk_1 by your foreign key name associated to the sakai_user_property table.
+ALTER TABLE SAKAI_USER_PROPERTY DROP FOREIGN KEY sakai_user_property_ibfk_1;
+-- END SAK-48034 User Properties can be also assigned to external users.
