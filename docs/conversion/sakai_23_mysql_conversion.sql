@@ -77,3 +77,9 @@ FROM
 DROP TABLE PERMISSIONS_TEMP;
 DROP TABLE PERMISSIONS_SRC_TEMP;
 -- SAK-47992 END
+
+-- SAK-48034 User Properties can be also assigned to external users.
+-- IMPORTANT: Replace sakai_user_property_ibfk_1 by your foreign key name associated to the sakai_user_property table.
+ALTER TABLE SAKAI_USER_PROPERTY DROP FOREIGN KEY sakai_user_property_ibfk_1;
+-- END SAK-48034 User Properties can be also assigned to external users.
+

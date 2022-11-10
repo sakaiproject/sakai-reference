@@ -83,3 +83,9 @@ FROM
 DROP TABLE PERMISSIONS_TEMP;
 DROP TABLE PERMISSIONS_SRC_TEMP;
 -- SAK-47992 END
+
+-- SAK-48034 User Properties: Cannot add user properties to external users (LDAP)
+-- IMPORTANT: Replace SYS_C0013939 by your foreign key name associated to the sakai_user_property table.
+ALTER TABLE SAKAI_USER_PROPERTY DROP FOREIGN KEY SYS_C0013939;
+-- END SAK-48034 User Properties: Cannot add user properties to external users (LDAP)
+
