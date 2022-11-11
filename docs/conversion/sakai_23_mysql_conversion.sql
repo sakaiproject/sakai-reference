@@ -83,3 +83,95 @@ DROP TABLE PERMISSIONS_SRC_TEMP;
 ALTER TABLE SAKAI_USER_PROPERTY DROP FOREIGN KEY sakai_user_property_ibfk_1;
 -- END SAK-48034 User Properties can be also assigned to external users.
 
+-- SAK-47876
+DROP PROCEDURE IF EXISTS calcRubricMaxPoints;
+DROP PROCEDURE IF EXISTS fillTmpRbcMaxPoints;
+DROP TABLE IF EXISTS tmp_rbc_max_points;
+
+CREATE TABLE tmp_rbc_max_points (
+       rubric_id bigint not null,
+       max_points double not null
+);
+
+DELIMITER $$
+
+CREATE PROCEDURE calcRubricMaxPoints (
+       IN rubricId bigint(20),
+       IN rubricWeighted bit
+)
+BEGIN
+	DECLARE finished INTEGER DEFAULT 0;
+	DECLARE critId bigint;
+	DECLARE critWeight double;
+	DECLARE critMaxPoints double;
+	DECLARE rubricMaxPoints double default 0.00;
+
+	-- declare cursor for criteria
+	DECLARE curCrit CURSOR FOR select c.id, c.weight from rbc_rubric r, rbc_criterion c where r.id=c.rubric_id and r.id=rubricId;
+
+        -- declare NOT FOUND handler
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished = 1;
+
+	OPEN curCrit;
+
+	getCrit: LOOP
+		  FETCH curCrit INTO critId, critWeight;
+                  IF finished = 1 THEN 
+		  	    LEAVE getCrit;
+		  END IF;
+
+	          select MAX(r.points) INTO critMaxPoints from rbc_rating r, rbc_criterion c where c.id=r.criterion_id and c.id=critId;		  
+
+		  -- skip criterion groups which will have null max points
+		  IF critMaxPoints is not null THEN
+		     IF rubricWeighted = b'0' THEN
+		     	SET rubricMaxPoints = rubricMaxPoints + critMaxPoints;
+		     ELSE
+     		     	SET rubricMaxPoints = rubricMaxPoints + (critMaxPoints * critWeight) / 100.00;
+		     END IF;
+		  END IF;
+	END LOOP getCrit;
+	CLOSE curCrit;
+
+	insert into tmp_rbc_max_points (rubric_id, max_points) values(rubricId, rubricMaxPoints); 
+END$$
+
+CREATE PROCEDURE fillTmpRbcMaxPoints ()
+BEGIN
+	DECLARE finished INTEGER DEFAULT 0;
+	DECLARE rbcId bigint;
+	DECLARE rbcWeighted bit;	
+
+	-- declare cursor for rubrics
+	DECLARE curRubric CURSOR FOR select id, weighted from rbc_rubric;
+
+        -- declare NOT FOUND handler
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished = 1;
+
+	OPEN curRubric;
+
+	getRubric: LOOP
+		  FETCH curRubric INTO rbcId, rbcWeighted;
+                  IF finished = 1 THEN 
+		  	    LEAVE getRubric;
+		  END IF;
+
+		  call calcRubricMaxPoints(rbcId, rbcWeighted);
+		  
+	END LOOP getRubric;
+	CLOSE curRubric;
+
+END$$
+
+DELIMITER ;
+
+CALL fillTmpRbcMaxPoints();
+
+ALTER TABLE rbc_rubric ADD COLUMN max_points double null;
+update rbc_rubric r, tmp_rbc_max_points t set r.max_points = t.max_points where r.id = t.rubric_id;
+
+DROP TABLE tmp_rbc_max_points;
+DROP PROCEDURE calcRubricMaxPoints;
+DROP PROCEDURE fillTmpRbcMaxPoints;
+
+-- END SAK-47876
