@@ -1,8 +1,14 @@
-For the most up-to-date conversion scripts please see the files in https://github.com/sakaiproject/sakai/tree/master/reference/docs/conversion
+# Sakai Conversion Scripts
+For the most up-to-date conversion scripts please see the files in https://github.com/sakaiproject/sakai-reference/tree/master/docs/conversion
 
+## Upgrading from Sakai 19.x and older?
+
+Older conversion scripts are present in https://github.com/sakaiproject/sakai-reference/tree/master/docs/conversion/pre_sakai_20
+
+## Upgrading Sakai database when upgrading
 You should be able to check just this directory out with subversion using the command:
 
-`svn co https://github.com/sakaiproject/sakai/trunk/reference/docs/conversion`
+`git clone https://github.com/sakaiproject/sakai/trunk/reference/docs/conversion`
 
 Or just clone it from Github.
 
