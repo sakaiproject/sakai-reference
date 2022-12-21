@@ -69,8 +69,9 @@ DROP INDEX rbc_tool_item_owner ON rbc_tool_item_rbc_assoc;
 CREATE INDEX rbc_tool_item_owner ON rbc_tool_item_rbc_assoc (toolId, itemId, siteId);
 
 -- this migrates the data from the link tables
-UPDATE rbc_criterion SET rubric_id = (SELECT rrc.rbc_rubric_id FROM rbc_rubric_criterions rrc WHERE rrc.criterions_id = rbc_criterion.id), order_index = (SELECT rrc.order_index FROM rbc_rubric_criterions rrc WHERE rrc.criterions_id = rbc_criterion.id) WHERE rubric_id is NULL;
-UPDATE rbc_rating SET criterion_id = (SELECT rcr.rbc_criterion_id FROM rbc_criterion_ratings rcr WHERE rcr.ratings_id = rbc_rating.id), order_index = (SELECT rcr.order_index FROM rbc_criterion_ratings rcr WHERE rcr.ratings_id = rbc_rating.id) WHERE criterion_id is NULL;
+UPDATE rbc_criterion rc JOIN rbc_rubric_criterions rrc ON rc.id = rrc.criterions_id SET rc.rubric_id = rrc.rbc_rubric_id, rc.order_index = rrc.order_index WHERE rc.rubric_id is NULL OR rc.order_index is NULL;
+UPDATE rbc_rating rc JOIN rbc_criterion_ratings rcr ON rc.id = rcr.ratings_id SET rc.criterion_id = rcr.rbc_criterion_id, rc.order_index = rcr.order_index WHERE rc.criterion_id is NULL OR rc.order_index is NULL;
+UPDATE rbc_tool_item_rbc_assoc rti JOIN rbc_rubric rc ON rti.rubric_id = rc.id SET rti.siteId = rc.ownerId WHERE rti.siteId is NULL;
 -- once the above conversion is run successfully then the following tables can be dropped
 -- DROP TABLE rbc_criterion_ratings;
 -- DROP TABLE rbc_rubric_criterions;
@@ -110,3 +111,50 @@ ALTER TABLE CONV_POST_STATUS MODIFY POST_ID VARCHAR(36);
 ALTER TABLE CONV_POST_STATUS MODIFY TOPIC_ID VARCHAR(36);
 ALTER TABLE CONV_TOPIC_STATUS MODIFY TOPIC_ID VARCHAR(36);
 -- SAK-47231 END
+
+-- SAK-45330 START
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_NAME) VALUES('rubrics.manager.view');
+
+INSERT INTO SAKAI_REALM_RL_FN VALUES (
+    (SELECT REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template'),
+    (SELECT ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'maintain'),
+    (SELECT FUNCTION_KEY  from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'rubrics.manager.view')
+);
+
+INSERT INTO SAKAI_REALM_RL_FN (REALM_KEY, ROLE_KEY, FUNCTION_KEY) VALUES (
+    (SELECT REALM_KEY FROM SAKAI_REALM WHERE REALM_ID = '!site.template.course'),
+    (SELECT ROLE_KEY FROM SAKAI_REALM_ROLE WHERE ROLE_NAME = 'Instructor'),
+    (SELECT FUNCTION_KEY FROM SAKAI_REALM_FUNCTION WHERE FUNCTION_NAME = 'rubrics.manager.view')
+);
+
+CREATE TABLE PERMISSIONS_SRC_TEMP (ROLE_NAME VARCHAR(99), FUNCTION_NAME VARCHAR(99));
+
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','rubrics.manager.view');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','rubrics.manager.view');
+
+CREATE TABLE PERMISSIONS_TEMP (ROLE_KEY INTEGER, FUNCTION_KEY INTEGER);
+INSERT INTO PERMISSIONS_TEMP (ROLE_KEY, FUNCTION_KEY)
+SELECT SRR.ROLE_KEY, SRF.FUNCTION_KEY
+FROM PERMISSIONS_SRC_TEMP TMPSRC
+JOIN SAKAI_REALM_ROLE SRR ON (TMPSRC.ROLE_NAME = SRR.ROLE_NAME)
+JOIN SAKAI_REALM_FUNCTION SRF ON (TMPSRC.FUNCTION_NAME = SRF.FUNCTION_NAME);
+
+INSERT INTO SAKAI_REALM_RL_FN (REALM_KEY, ROLE_KEY, FUNCTION_KEY)
+SELECT
+    SRRFD.REALM_KEY, SRRFD.ROLE_KEY, TMP.FUNCTION_KEY
+FROM
+    (SELECT DISTINCT SRRF.REALM_KEY, SRRF.ROLE_KEY FROM SAKAI_REALM_RL_FN SRRF) SRRFD
+    JOIN PERMISSIONS_TEMP TMP ON (SRRFD.ROLE_KEY = TMP.ROLE_KEY)
+    JOIN SAKAI_REALM SR ON (SRRFD.REALM_KEY = SR.REALM_KEY)
+    WHERE SR.REALM_ID != '!site.helper'
+    AND NOT EXISTS (
+        SELECT 1
+            FROM SAKAI_REALM_RL_FN SRRFI
+            WHERE SRRFI.REALM_KEY=SRRFD.REALM_KEY AND SRRFI.ROLE_KEY=SRRFD.ROLE_KEY AND SRRFI.FUNCTION_KEY=TMP.FUNCTION_KEY
+    );
+
+-- clean up the temp tables
+DROP TABLE PERMISSIONS_TEMP;
+DROP TABLE PERMISSIONS_SRC_TEMP;
+
+-- SAK-45330 END
