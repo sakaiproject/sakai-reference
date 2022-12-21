@@ -1,3 +1,7 @@
+-- Begin SAK-47582
+ALTER TABLE lti_content ADD INDEX TOOL_IDX(tool_id);
+-- End SAK-47582
+
 -- SAK-47837 start
 ALTER TABLE rbc_returned_criterion_out DROP FOREIGN KEY FK3sroha5yjh3cbvq0on02wf3fk;
 ALTER TABLE rbc_criterion_outcome DROP FOREIGN KEY FKalvarr6g412wt7wto6tutsddu;
