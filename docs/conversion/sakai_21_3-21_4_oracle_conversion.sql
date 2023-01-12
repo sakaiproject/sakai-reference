@@ -1,25 +1,11 @@
--- Start SAK-41604
-ALTER TABLE RBC_EVALUATION ADD EVALUATED_ITEM_OWNER_TYPE NUMBER(1,0);
--- End SAK-41604
+-- SAK-45330 START
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'rubrics.manager.view');
 
--- SAK-46977
--- Add the Functions
-INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'sitestats.all');
-INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'sitestats.own');
-
--- --------------------------------------------------------------------------------------------------------------------------------------
--- backfill new permission into existing realms
--- --------------------------------------------------------------------------------------------------------------------------------------
-
--- for each realm that has a role matching something in this table, we will add to that role the function from this table
 CREATE TABLE PERMISSIONS_SRC_TEMP (ROLE_NAME VARCHAR(99), FUNCTION_NAME VARCHAR(99));
 
-INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','sitestats.all');
-INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','sitestats.all');
-INSERT INTO PERMISSIONS_SRC_TEMP VALUES('access','sitestats.own');
-INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Student','sitestats.own');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('maintain','rubrics.manager.view');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES('Instructor','rubrics.manager.view');
 
--- lookup the role and function number
 CREATE TABLE PERMISSIONS_TEMP (ROLE_KEY INTEGER, FUNCTION_KEY INTEGER);
 INSERT INTO PERMISSIONS_TEMP (ROLE_KEY, FUNCTION_KEY)
 SELECT SRR.ROLE_KEY, SRF.FUNCTION_KEY
@@ -44,5 +30,6 @@ FROM
 
 -- clean up the temp tables
 DROP TABLE PERMISSIONS_TEMP;
+DROP TABLE PERMISSIONS_SRC_TEMP;
 
--- END SAK-46977
+-- SAK-45330 END
