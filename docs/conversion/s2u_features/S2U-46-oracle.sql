@@ -3,7 +3,7 @@ CREATE TABLE mc_site_synchronization (
   id varchar2(99) NOT NULL,
   site_id varchar2(255) NOT NULL,
   team_id varchar2(255) NOT NULL,
-  forced raw(1) DEFAULT NULL,
+  forced number(1,0) DEFAULT NULL,
   status number(1,0) DEFAULT NULL,
   status_updated_at timestamp(6) DEFAULT NULL,
   PRIMARY KEY (id),
