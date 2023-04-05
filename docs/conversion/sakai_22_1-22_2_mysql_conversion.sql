@@ -6,7 +6,6 @@ ALTER TABLE lti_content ADD INDEX TOOL_IDX(tool_id);
 ALTER TABLE rbc_returned_criterion_out DROP FOREIGN KEY FK3sroha5yjh3cbvq0on02wf3fk;
 ALTER TABLE rbc_criterion_outcome DROP FOREIGN KEY FKalvarr6g412wt7wto6tutsddu;
 
-ALTER TABLE rbc_rating DROP COLUMN order_index;
 ALTER TABLE rbc_criterion DROP COLUMN ownerId;
 ALTER TABLE rbc_tool_item_rbc_assoc DROP COLUMN siteId;
 ALTER TABLE rbc_rating MODIFY criterion_id BIGINT NOT NULL;
