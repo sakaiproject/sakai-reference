@@ -7,7 +7,8 @@ create index TOOL_IDX on lti_content (TOOL_ID);
 ALTER TABLE rbc_returned_criterion_out DROP CONSTRAINT FK3sroha5yjh3cbvq0on02wf3fk;
 ALTER TABLE rbc_criterion_outcome DROP CONSTRAINT FKalvarr6g412wt7wto6tutsddu;
 
-ALTER TABLE rbc_rating DROP COLUMN order_index;
+-- order_index will be added back in 22.3 script
+-- ALTER TABLE rbc_rating DROP COLUMN order_index;
 ALTER TABLE rbc_criterion DROP COLUMN ownerId;
 ALTER TABLE rbc_tool_item_rbc_assoc DROP COLUMN siteId;
 ALTER TABLE rbc_rating MODIFY criterion_id NUMBER(19,0) NOT NULL;
