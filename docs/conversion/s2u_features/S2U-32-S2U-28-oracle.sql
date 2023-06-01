@@ -1,11 +1,20 @@
--- S2U-28 --
--- Optional: add this if you want instructors to manage tags on a site, you'll need to add the tool too
+-- S2U-32 and S2U-28 --
+CREATE TABLE tagservice_tagassociation (
+  id varchar2(99) NOT NULL,
+  tag_id varchar2(255) NOT NULL,
+  item_id varchar2(255) NOT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT UK7tc7vcvcb0bw8moqdu3giik6o UNIQUE (tag_id,item_id)
+);
+-- Add this for every role able to create and manage tags on a site, you'll need to add the tool too
 INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'maintain'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'tagservice.manage'));
 INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Instructor'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'tagservice.manage'));
--- Optional: add this to populate existing sites with the permission
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Teaching Assistant'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'tagservice.manage'));
+-- Add this to populate existing sites with the permission
 CREATE TABLE PERMISSIONS_SRC_TEMP (ROLE_NAME VARCHAR(99), FUNCTION_NAME VARCHAR(99));
 INSERT INTO PERMISSIONS_SRC_TEMP VALUES ('maintain','tagservice.manage');
 INSERT INTO PERMISSIONS_SRC_TEMP VALUES ('Instructor','tagservice.manage');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES ('Teaching Assistant','tagservice.manage');
 
 CREATE TABLE PERMISSIONS_TEMP (ROLE_KEY INTEGER, FUNCTION_KEY INTEGER);
 INSERT INTO PERMISSIONS_TEMP (ROLE_KEY, FUNCTION_KEY)
@@ -30,4 +39,4 @@ FROM
 
 DROP TABLE PERMISSIONS_TEMP;
 DROP TABLE PERMISSIONS_SRC_TEMP;
--- END S2U-28 --
+-- END S2U-32 and S2U-28 --
