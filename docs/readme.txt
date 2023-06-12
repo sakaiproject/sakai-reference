@@ -7,7 +7,7 @@ The official website for Sakai is:
 	
 The latest release of Sakai can always be found at:
 
-	https://www.sakailms.org/release
+	http://source.sakaiproject.org/release/22.2/
 	
 To see the institutions involved in the Sakai collaboration and
 their implementation status, see:
