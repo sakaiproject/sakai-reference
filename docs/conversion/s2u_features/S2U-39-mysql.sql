@@ -1,5 +1,5 @@
 -- S2U-39 --
-Create table rwikipagegroups (
+CREATE TABLE rwikipagegroups (
     rwikiobjectid VARCHAR(36) NOT NULL,
     groupid VARCHAR(99) NOT NULL
 )
