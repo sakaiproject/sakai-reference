@@ -603,3 +603,7 @@ CREATE TABLE SAM_SECUREDELIVERY_T (
 
 CREATE INDEX SAM_SECURE_INDEX ON SAM_SECUREDELIVERY_T(PUB_ASSESSMENT_ID, AGENTID);
 -- END SAK-45616
+
+-- SAK-49006
+DELETE FROM email_template_item WHERE TEMPLATE_KEY IN ('sitemanage.siteImport.Confirmation', 'sitemange.notifyAddedParticipant', 'sitemanage.notifyNewUserEmail');
+-- END SAK-49006

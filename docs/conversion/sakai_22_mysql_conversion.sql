@@ -606,3 +606,6 @@ ALTER TABLE rbc_evaluation MODIFY status INT NULL;
 ALTER TABLE rbc_evaluation ALTER status SET DEFAULT null;
 -- END SAK-45194
  
+-- SAK-49006
+DELETE FROM email_template_item WHERE TEMPLATE_KEY IN ('sitemanage.siteImport.Confirmation', 'sitemange.notifyAddedParticipant', 'sitemanage.notifyNewUserEmail');
+-- END SAK-49006
