@@ -4,6 +4,8 @@ CREATE TABLE mc_site_synchronization (
   site_id varchar2(255) NOT NULL,
   team_id varchar2(255) NOT NULL,
   forced number(1,0) DEFAULT NULL,
+  date_from timestamp(6) DEFAULT NULL,
+  date_to timestamp(6) DEFAULT NULL,
   status number(1,0) DEFAULT NULL,
   status_updated_at timestamp(6) DEFAULT NULL,
   PRIMARY KEY (id),

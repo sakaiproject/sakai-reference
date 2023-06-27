@@ -4,6 +4,8 @@ CREATE TABLE `mc_site_synchronization` (
   `site_id` varchar(255) NOT NULL,
   `team_id` varchar(255) NOT NULL,
   `forced` bit(1) DEFAULT NULL,
+  `date_from` datetime DEFAULT NULL,
+  `date_to` datetime DEFAULT NULL,
   `status` int DEFAULT NULL,
   `status_updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
