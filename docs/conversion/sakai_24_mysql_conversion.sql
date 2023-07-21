@@ -19,6 +19,17 @@ CREATE INDEX CONTENT_RESOURCE_SHA256_DELETE_I ON CONTENT_RESOURCE_DELETE (RESOUR
 CREATE INDEX CONTENT_RESOURCE_FILE_PATH_DELETE_I ON CONTENT_RESOURCE_DELETE (FILE_PATH);
 -- End SAK-48328
 
+-- S2U-12 --
+ALTER TABLE sam_itemfeedback_t ADD TEXT_CLOB CLOB;
+UPDATE sam_itemfeedback_t set TEXT_CLOB = TEXT;  -- convert varchar2 to CLOB
+ALTER TABLE sam_itemfeedback_t drop column TEXT;
+ALTER TABLE sam_itemfeedback_t RENAME COLUMN TEXT_CLOB TO TEXT;
+
+ALTER TABLE sam_publisheditemfeedback_t ADD TEXT_CLOB CLOB;
+UPDATE sam_publisheditemfeedback_t set TEXT_CLOB = TEXT;  -- convert varchar2 to CLOB
+ALTER TABLE sam_publisheditemfeedback_t drop column TEXT;
+ALTER TABLE sam_publisheditemfeedback_t RENAME COLUMN TEXT_CLOB TO TEXT;
+-- End S2U-12 --
 
 -- S2U-42 --
 CREATE TABLE CARDGAME_STAT_ITEM (
