@@ -2,3 +2,18 @@
 UPDATE user_audits_log audits INNER JOIN SAKAI_USER_ID_MAP idmap ON audits.user_id = idmap.eid SET audits.user_id = idmap.user_id;
 UPDATE user_audits_log audits INNER JOIN SAKAI_USER_ID_MAP idmap ON audits.action_user_id = idmap.eid SET audits.action_user_id = idmap.user_id;
 -- END SAK-48106
+
+
+-- S2U-42 --
+CREATE TABLE CARDGAME_STAT_ITEM (
+  ID VARCHAR2(99 CHAR) NOT NULL,
+  PLAYER_ID VARCHAR2(99 CHAR) NOT NULL,
+  USER_ID VARCHAR2(99 CHAR) NOT NULL,
+  HITS NUMBER(5,0) NOT NULL,
+  MISSES NUMBER(5,0) NOT NULL,
+  MARKED_AS_LEARNED NUMBER(1,0) NOT NULL,
+  PRIMARY KEY(ID)
+);
+
+CREATE INDEX IDX_CARDGAME_STAT_ITEM_PLAYER_ID ON CARDGAME_STAT_ITEM (ID, PLAYER_ID);
+-- END S2U-42 --
