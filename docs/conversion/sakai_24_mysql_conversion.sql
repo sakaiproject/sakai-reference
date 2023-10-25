@@ -56,3 +56,8 @@ CREATE UNIQUE INDEX `UKqsk75a24pi108jpybtt16hshv` ON `rbc_evaluation` (evaluated
 UPDATE rbc_evaluation SET evaluated_item_owner_id = RIGHT(evaluated_item_owner_id, 36) where evaluated_item_owner_id like '/site/%';
 ALTER TABLE rbc_tool_item_rbc_assoc_conf MODIFY COLUMN parameters int;
 -- END S2U-34 --
+
+-- S2U-11 --
+ALTER TABLE SAM_ITEMTEXT_T ADD COLUMN ADDEDBUTNOTEXTRACTED BIT(1) DEFAULT FALSE NOT NULL;
+ALTER TABLE SAM_PUBLISHEDITEMTEXT_T ADD COLUMN ADDEDBUTNOTEXTRACTED BIT(1) DEFAULT FALSE NOT NULL;
+-- End S2U-11 --
