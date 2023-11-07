@@ -26,7 +26,7 @@ CREATE TABLE `mc_group_synchronization` (
 
 CREATE TABLE `mc_config_item` (
   `item_key` varchar(255) NOT NULL,
-  `value` varchar(255) NOT NULL,
+  `value` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`item_key`)
 );
 
