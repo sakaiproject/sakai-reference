@@ -33,7 +33,7 @@ CREATE TABLE meeting_properties (
 );
 
 -- Generate ID using sequence and trigger
-CREATE SEQUENCE meeting_properties_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE MEETING_PROPERTY_S START WITH 1 INCREMENT BY 1;
 
 CREATE INDEX FK_mp_m ON meeting_properties (prop_meeting_id);
 
@@ -48,7 +48,7 @@ CREATE TABLE meeting_attendees (
 );
 
 -- Generate ID using sequence and trigger
-CREATE SEQUENCE meeting_attendees_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE MEETING_ATTENDEE_S START WITH 1 INCREMENT BY 1;
 
 CREATE INDEX FK_ma_m ON meeting_attendees (attendee_meeting_id);
 -- S2U-47 --
