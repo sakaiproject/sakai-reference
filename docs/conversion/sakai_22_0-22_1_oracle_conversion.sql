@@ -1,9 +1,10 @@
 -- SAK-46436 START
-CREATE TABLE TASKS_ASSIGNED(
-    ID               NUMBER(19)            NOT NULL,
+CREATE TABLE TASKS_ASSIGNED
+(
+    ID               NUMBER(19,0)          NOT NULL,
     OBJECT_ID        VARCHAR(99)           NULL,
     ASSIGNATION_TYPE VARCHAR(255)          NOT NULL,
-    TASK_ID          NUMBER(19)            NOT NULL,
+    TASK_ID          NUMBER(19,0)          NOT NULL,
     CONSTRAINT PK_TASKS_ASSIGNED PRIMARY KEY (ID)
 );
 
@@ -11,6 +12,7 @@ ALTER TABLE TASKS ADD TASK_OWNER VARCHAR(99) NULL;
 CREATE INDEX IDX_TASKS_ASSIGNED ON TASKS_ASSIGNED (TASK_ID);
 ALTER TABLE TASKS_ASSIGNED
     ADD CONSTRAINT FK915ilfdtgcwqab3xuyfwn95ao FOREIGN KEY (TASK_ID) REFERENCES TASKS (ID);
+CREATE SEQUENCE TASKS_ASSIGNED_S MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20;
 -- SAK-46436 END
 
 -- SAK-46986 START
@@ -30,12 +32,19 @@ ALTER TABLE rbc_rating ADD order_index INT DEFAULT null NULL;
 ALTER TABLE rbc_criterion ADD order_index INT DEFAULT null NULL;
 ALTER TABLE rbc_tool_item_rbc_assoc ADD siteId VARCHAR(99) NULL;
 ALTER TABLE rbc_tool_item_rbc_assoc ADD CONSTRAINT rbc_item_rubric UNIQUE (itemId, rubric_id);
+ALTER TABLE rbc_criterion_ratings DROP CONSTRAINT FK2ecdorwm3nm2ytyg9uvxlik53;
+ALTER TABLE rbc_criterion_ratings DROP CONSTRAINT FKd03estm381c26jhsq4wd44vwx;
 ALTER TABLE rbc_criterion_ratings DROP CONSTRAINT FK_funjjd0xkrmm5x300r7i4la83;
+ALTER TABLE rbc_criterion_ratings DROP CONSTRAINT UK_funjjd0xkrmm5x300r7i4la83;
+ALTER TABLE rbc_evaluation DROP CONSTRAINT FKem9md18gcni93xqa5ijykty8e;
+ALTER TABLE rbc_rubric_criterions DROP CONSTRAINT FKilhg1u02m1765ltp3253wp7hn;
+ALTER TABLE rbc_rubric_criterions DROP CONSTRAINT FKt5dmnek3q7syuqck0uk9rw2hg;
 
 ALTER TABLE rbc_criterion DROP COLUMN created;
 ALTER TABLE rbc_rating DROP COLUMN created;
 ALTER TABLE rbc_criterion DROP COLUMN creatorId;
 ALTER TABLE rbc_rating DROP COLUMN creatorId;
+ALTER TABLE rbc_rubric DROP COLUMN description;
 ALTER TABLE rbc_criterion DROP COLUMN modified;
 ALTER TABLE rbc_rating DROP COLUMN modified;
 ALTER TABLE rbc_rating DROP COLUMN ownerId;
@@ -49,6 +58,7 @@ ALTER TABLE rbc_evaluation DROP COLUMN shared;
 ALTER TABLE rbc_rating DROP COLUMN shared;
 ALTER TABLE rbc_tool_item_rbc_assoc DROP COLUMN shared;
 ALTER TABLE rbc_tool_item_rbc_assoc DROP COLUMN ownerId;
+
 ALTER TABLE rbc_criterion_outcome MODIFY pointsAdjusted DEFAULT 0;
 ALTER TABLE rbc_returned_criterion_out MODIFY pointsAdjusted DEFAULT 0;
 ALTER TABLE rbc_rubric MODIFY shared DEFAULT 0;
@@ -69,6 +79,26 @@ UPDATE rbc_rating
 UPDATE RBC_TOOL_ITEM_RBC_ASSOC
     SET siteid = (SELECT rc.ownerId FROM rbc_rubric rc WHERE rc.id = rbc_tool_item_rbc_assoc.rubric_id)
     WHERE siteid is NULL;
+
+ALTER TABLE rbc_criterion_outcome MODIFY pointsAdjusted NUMBER(1) NULL;
+ALTER TABLE rbc_criterion_outcome ALTER pointsAdjusted DEFAULT 0;
+ALTER TABLE rbc_returned_criterion_out MODIFY pointsAdjusted NUMBER(1) NULL;
+ALTER TABLE rbc_returned_criterion_out ALTER pointsAdjusted DEFAULT 0;
+ALTER TABLE rbc_rubric MODIFY shared NUMBER(1) NULL;
+ALTER TABLE rbc_rubric ALTER shared DEFAULT 0;
+ALTER TABLE rbc_criterion ALTER weight DEFAULT null;
+ALTER TABLE rbc_rubric MODIFY weighted NUMBER(1) NULL;
+ALTER TABLE rbc_rubric ALTER weighted DEFAULT 0;
+DROP INDEX rbc_tool_item_owner ON rbc_tool_item_rbc_assoc;
+CREATE INDEX rbc_tool_item_owner ON rbc_tool_item_rbc_assoc (toolId, itemId, siteId);
+
+-- this migrates the data from the link tables
+UPDATE rbc_criterion rc SET rc.rubric_id = (select rrc.rbc_rubric_id FROM rbc_rubric_criterions rrc WHERE rc.id = rrc.criterions_id and rownum<2) WHERE rc.rubric_id is NULL;
+UPDATE rbc_criterion rc SET rc.order_index = (select rrc.order_index FROM rbc_rubric_criterions rrc WHERE rc.id = rrc.criterions_id and rownum<2) WHERE rc.order_index is NULL;
+UPDATE rbc_rating rc SET rc.criterion_id = (select rcr.rbc_criterion_id FROM rbc_criterion_ratings rcr WHERE rc.id = rcr.ratings_id and rownum<2) WHERE rc.criterion_id is NULL;
+UPDATE rbc_rating rc SET rc.order_index  = (select rcr.order_index FROM rbc_criterion_ratings rcr WHERE rc.id = rcr.ratings_id and rownum<2) WHERE rc.order_index is NULL;
+UPDATE rbc_tool_item_rbc_assoc rti SET rti.siteId = (select rc.ownerId FROM rbc_rubric rc WHERE rti.rubric_id = rc.id) WHERE rti.siteId is NULL;
+
 -- once the above conversion is run successfully then the following tables can be dropped
 -- DROP TABLE rbc_criterion_ratings;
 -- DROP TABLE rbc_rubric_criterions;
@@ -77,10 +107,12 @@ UPDATE RBC_TOOL_ITEM_RBC_ASSOC
 -- SAK-46257 START
 ALTER TABLE CONV_POSTS ADD DEPTH INT DEFAULT null NULL;
 ALTER TABLE CONV_TOPIC_STATUS ADD POSTED NUMBER(1) DEFAULT 0 NULL;
+
 ALTER TABLE CONV_TOPICS ADD DUE_DATE TIMESTAMP DEFAULT null NULL;
 ALTER TABLE CONV_TOPICS ADD HIDE_DATE TIMESTAMP DEFAULT null NULL;
 ALTER TABLE CONV_TOPICS ADD LOCK_DATE TIMESTAMP DEFAULT null NULL;
 ALTER TABLE CONV_TOPICS ADD SHOW_DATE TIMESTAMP DEFAULT null NULL;
+
 ALTER TABLE CONV_POSTS ADD HOW_ACTIVE INT DEFAULT null NULL;
 ALTER TABLE CONV_COMMENTS ADD TOPIC_ID VARCHAR(36) NOT NULL;
 ALTER TABLE CONV_POSTS ADD NUMBER_OF_THREAD_REACTIONS INT DEFAULT null NULL;
