@@ -15,3 +15,10 @@ UPDATE SAKAI_SITE_PAGE SET LAYOUT='0' WHERE TITLE='Dashboard';
 --- Fix Site Type in !plussite template
 UPDATE SAKAI_SITE SET TYPE='course' WHERE SITE_ID = '!plussite';
 --- SAK-49633 END
+
+--- SAK-49652
+--- Fix Custom Order in !plussite template
+UPDATE SAKAI_SITE SET CUSTOM_PAGE_ORDERED='1' WHERE SITE_ID='!plussite';
+--- SAK-49652 END
+
+
