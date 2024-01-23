@@ -58,6 +58,28 @@ ALTER TABLE rbc_evaluation DROP COLUMN shared;
 ALTER TABLE rbc_rating DROP COLUMN shared;
 ALTER TABLE rbc_tool_item_rbc_assoc DROP COLUMN shared;
 ALTER TABLE rbc_tool_item_rbc_assoc DROP COLUMN ownerId;
+
+ALTER TABLE rbc_criterion_outcome MODIFY pointsAdjusted DEFAULT 0;
+ALTER TABLE rbc_returned_criterion_out MODIFY pointsAdjusted DEFAULT 0;
+ALTER TABLE rbc_rubric MODIFY shared DEFAULT 0;
+ALTER TABLE rbc_criterion MODIFY weight DEFAULT null;
+ALTER TABLE rbc_rubric MODIFY weighted DEFAULT 0;
+DROP INDEX rbc_tool_item_owner;
+CREATE INDEX rbc_tool_item_owner ON rbc_tool_item_rbc_assoc (toolId, itemId, siteId);
+
+-- this migrates the data from the link tables
+UPDATE rbc_criterion
+    SET rubric_id = (SELECT rrc.rbc_rubric_id FROM rbc_rubric_criterions rrc WHERE rrc.criterions_id = rbc_criterion.id),
+        order_index = (SELECT rrc.order_index FROM rbc_rubric_criterions rrc WHERE rrc.criterions_id = rbc_criterion.id)
+    WHERE rubric_id is NULL;
+UPDATE rbc_rating
+    SET criterion_id = (SELECT rcr.rbc_criterion_id FROM rbc_criterion_ratings rcr WHERE rcr.ratings_id = rbc_rating.id),
+        order_index = (SELECT rcr.order_index FROM rbc_criterion_ratings rcr WHERE rcr.ratings_id = rbc_rating.id)
+    WHERE criterion_id is NULL;
+UPDATE RBC_TOOL_ITEM_RBC_ASSOC
+    SET siteid = (SELECT rc.ownerId FROM rbc_rubric rc WHERE rc.id = rbc_tool_item_rbc_assoc.rubric_id)
+    WHERE siteid is NULL;
+
 ALTER TABLE rbc_criterion_outcome MODIFY pointsAdjusted NUMBER(1) NULL;
 ALTER TABLE rbc_criterion_outcome ALTER pointsAdjusted DEFAULT 0;
 ALTER TABLE rbc_returned_criterion_out MODIFY pointsAdjusted NUMBER(1) NULL;
@@ -76,6 +98,7 @@ UPDATE rbc_criterion rc SET rc.order_index = (select rrc.order_index FROM rbc_ru
 UPDATE rbc_rating rc SET rc.criterion_id = (select rcr.rbc_criterion_id FROM rbc_criterion_ratings rcr WHERE rc.id = rcr.ratings_id and rownum<2) WHERE rc.criterion_id is NULL;
 UPDATE rbc_rating rc SET rc.order_index  = (select rcr.order_index FROM rbc_criterion_ratings rcr WHERE rc.id = rcr.ratings_id and rownum<2) WHERE rc.order_index is NULL;
 UPDATE rbc_tool_item_rbc_assoc rti SET rti.siteId = (select rc.ownerId FROM rbc_rubric rc WHERE rti.rubric_id = rc.id) WHERE rti.siteId is NULL;
+
 -- once the above conversion is run successfully then the following tables can be dropped
 -- DROP TABLE rbc_criterion_ratings;
 -- DROP TABLE rbc_rubric_criterions;
@@ -88,6 +111,7 @@ ALTER TABLE CONV_TOPICS ADD DUE_DATE timestamp DEFAULT null NULL;
 ALTER TABLE CONV_TOPICS ADD HIDE_DATE timestamp DEFAULT null NULL;
 ALTER TABLE CONV_TOPICS ADD LOCK_DATE timestamp DEFAULT null NULL;
 ALTER TABLE CONV_TOPICS ADD SHOW_DATE timestamp DEFAULT null NULL;
+
 ALTER TABLE CONV_POSTS ADD HOW_ACTIVE INT DEFAULT null NULL;
 ALTER TABLE CONV_COMMENTS ADD TOPIC_ID VARCHAR(36) NOT NULL;
 ALTER TABLE CONV_POSTS ADD NUMBER_OF_THREAD_REACTIONS INT DEFAULT null NULL;
