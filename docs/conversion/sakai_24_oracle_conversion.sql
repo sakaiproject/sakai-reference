@@ -137,6 +137,158 @@ CREATE SEQUENCE SAM_SEBVALIDATION_ID_S MINVALUE 1 MAXVALUE 999999999999999999999
 ALTER TABLE SAM_PUBLISHEDITEM_T ADD CANCELLATION NUMBER(2,0) DEFAULT 0 NOT NULL;
 -- END S2U-14 --
 
+-- S2U-5 --
+ALTER TABLE rbc_rubric ADD adhoc NUMBER(1) DEFAULT 0;
+-- End S2U-5 --
+
+-- S2U-35 --
+CREATE TABLE COND_CONDITION (
+  ID varchar2(36) NOT NULL,
+  TYPE varchar2(99) NOT NULL,
+  OPERATOR varchar2(99) DEFAULT NULL,
+  ARGUMENT varchar2(999) DEFAULT NULL,
+  SITE_ID varchar2(36) NOT NULL,
+  TOOL_ID varchar2(99) NOT NULL,
+  ITEM_ID varchar2(99) DEFAULT NULL,
+  PRIMARY KEY (ID),
+);
+CREATE INDEX IDX_CONDITION_SITE_ID ON COND_CONDITION (SITE_ID);
+
+CREATE TABLE COND_PARENT_CHILD (
+  PARENT_ID varchar2(36) NOT NULL,
+  CHILD_ID varchar2(36) NOT NULL,
+  PRIMARY KEY (PARENT_ID, CHILD_ID),
+  CONSTRAINT FK_CHILD_ID_CONDITION_ID FOREIGN KEY (CHILD_ID) REFERENCES COND_CONDITION (ID),
+  CONSTRAINT FK_PARENT_ID_CONDITION_ID FOREIGN KEY (PARENT_ID) REFERENCES COND_CONDITION (ID)
+);
+CREATE INDEX FK_CHILD_ID_CONDITION_ID ON COND_PARENT_CHILD (CHILD_ID);
+-- END S2U-35 --
+
+-- S2U-46 --
+CREATE TABLE mc_site_synchronization (
+  id varchar2(99) NOT NULL,
+  site_id varchar2(255) NOT NULL,
+  team_id varchar2(255) NOT NULL,
+  forced number(1,0) DEFAULT NULL,
+  date_from timestamp(6) DEFAULT NULL,
+  date_to timestamp(6) DEFAULT NULL,
+  status number(1,0) DEFAULT NULL,
+  status_updated_at timestamp(6) DEFAULT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT UKmc_ss UNIQUE (site_id,team_id)
+);
+
+CREATE TABLE mc_group_synchronization (
+  id varchar2(99) NOT NULL,
+  parentId varchar2(99) DEFAULT NULL,
+  group_id varchar2(255) NOT NULL,
+  channel_id varchar2(255) NOT NULL,
+  status number(1,0) DEFAULT NULL,
+  status_updated_at timestamp(6) DEFAULT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT UKmc_gs UNIQUE (parentId,group_id,channel_id),
+  CONSTRAINT FKmc_gs_ss FOREIGN KEY (parentId) REFERENCES mc_site_synchronization (id) ON DELETE CASCADE
+);
+
+CREATE TABLE mc_config_item (
+  item_key varchar2(255) NOT NULL,
+  value varchar2(255) DEFAULT NULL,
+  PRIMARY KEY (item_key)
+);
+
+CREATE TABLE mc_log (
+  id number(19, 0) NOT NULL,
+  context clob,
+  event varchar2(255) DEFAULT NULL,
+  event_date timestamp(6) DEFAULT NULL,
+  status number(1,0) DEFAULT NULL,
+  PRIMARY KEY (id)
+);
+
+-- Generate ID using sequence and trigger
+CREATE SEQUENCE mc_log_seq START WITH 1 INCREMENT BY 1;
+-- END S2U-46 --
+
+-- S2U-47 --
+CREATE TABLE meeting_providers (
+  provider_id varchar2(99) NOT NULL,
+  provider_name varchar2(255) NOT NULL,
+  PRIMARY KEY (provider_id)
+);
+
+CREATE TABLE meetings (
+  meeting_id varchar2(99) NOT NULL,
+  meeting_description clob,
+  meeting_end_date timestamp(6) DEFAULT NULL,
+  meeting_owner_id varchar2(99) DEFAULT NULL,
+  meeting_site_id varchar2(99) DEFAULT NULL,
+  meeting_start_date timestamp(6) DEFAULT NULL,
+  meeting_title varchar2(255) NOT NULL,
+  meeting_url varchar2(255) DEFAULT NULL,
+  meeting_provider_id varchar2(99) DEFAULT NULL,
+  PRIMARY KEY (meeting_id)
+,
+  CONSTRAINT FK_m_mp FOREIGN KEY (meeting_provider_id) REFERENCES meeting_providers (provider_id)
+);
+
+CREATE INDEX FK_m_mp ON meetings (meeting_provider_id);
+
+CREATE TABLE meeting_properties (
+  prop_id number(19, 0) NOT NULL,
+  prop_name varchar2(255) NOT NULL,
+  prop_value varchar2(255) DEFAULT NULL,
+  prop_meeting_id varchar2(99) DEFAULT NULL,
+  PRIMARY KEY (prop_id)
+,
+  CONSTRAINT FK_mp_m FOREIGN KEY (prop_meeting_id) REFERENCES meetings (meeting_id)
+);
+
+-- Generate ID using sequence and trigger
+CREATE SEQUENCE MEETING_PROPERTY_S START WITH 1 INCREMENT BY 1;
+
+CREATE INDEX FK_mp_m ON meeting_properties (prop_meeting_id);
+
+CREATE TABLE meeting_attendees (
+  attendee_id number(19, 0) NOT NULL,
+  attendee_object_id varchar2(255) DEFAULT NULL,
+  attendee_type number(1, 0) DEFAULT NULL,
+  attendee_meeting_id varchar2(99) DEFAULT NULL,
+  PRIMARY KEY (attendee_id)
+,
+  CONSTRAINT FK_ma_m FOREIGN KEY (attendee_meeting_id) REFERENCES meetings (meeting_id)
+);
+
+-- Generate ID using sequence and trigger
+CREATE SEQUENCE MEETING_ATTENDEE_S START WITH 1 INCREMENT BY 1;
+
+CREATE INDEX FK_ma_m ON meeting_attendees (attendee_meeting_id);
+-- END S2U-47 --
+
+-- S2U-49 --
+CREATE TABLE mc_access_token (
+  sakaiUserId varchar2(255) NOT NULL,
+  accessToken clob,
+  microsoftUserId varchar2(255) DEFAULT NULL,
+  account varchar2(255) DEFAULT NULL,
+  PRIMARY KEY (sakaiUserId)
+);
+-- END S2U-49 --
+
+-- S2U-16 --
+ALTER TABLE SAM_ITEMGRADING_T ADD ATTEMPTDATE TIMESTAMP (6);
+
+CREATE TABLE SAM_SECTIONGRADING_T (
+  SECTIONGRADINGID NUMBER(19) NOT NULL,
+  ASSESSMENTGRADINGID NUMBER(19) NOT NULL,
+  PUBLISHEDSECTIONID NUMBER(19) NOT NULL,
+  AGENTID VARCHAR2(255) NOT NULL,
+  ATTEMPTDATE TIMESTAMP(6) DEFAULT NULL,
+  PRIMARY KEY (SECTIONGRADINGID),
+  CONSTRAINT uniqueStudentSectionResponse UNIQUE  (ASSESSMENTGRADINGID,PUBLISHEDSECTIONID,AGENTID)
+);
+CREATE SEQUENCE SAM_SECTIONGRADING_T_SEQ START WITH 1 INCREMENT BY 1;
+-- S2U-16 --
+
 -- S2U-19 --
 ALTER TABLE SAM_ITEM_T ADD ISFIXED NUMBER(1,0) DEFAULT 0 NOT NULL;
 ALTER TABLE SAM_PUBLISHEDITEM_T ADD ISFIXED NUMBER(1,0) DEFAULT 0 NOT NULL;

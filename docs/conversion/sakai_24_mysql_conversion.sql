@@ -161,6 +161,142 @@ CREATE INDEX SAM_SEB_INDEX ON SAM_SEBVALIDATION_T (PUBLISHEDASSESSMENTID, AGENTI
 ALTER TABLE SAM_PUBLISHEDITEM_T ADD CANCELLATION TINYINT DEFAULT 0 NOT NULL;
 -- END S2U-14 --
 
+-- S2U-5 --
+ALTER TABLE rbc_rubric ADD adhoc bit(1) DEFAULT 0;
+-- End S2U-5 --
+
+-- S2U-35 --
+CREATE TABLE COND_CONDITION (
+  ID varchar(36) NOT NULL,
+  TYPE varchar(99) NOT NULL,
+  OPERATOR varchar(99) DEFAULT NULL,
+  ARGUMENT varchar(999) DEFAULT NULL,
+  SITE_ID varchar(36) NOT NULL,
+  TOOL_ID varchar(99) NOT NULL,
+  ITEM_ID varchar(99) DEFAULT NULL,
+  PRIMARY KEY (ID),
+  KEY IDX_CONDITION_SITE_ID (SITE_ID)
+);
+
+CREATE TABLE COND_PARENT_CHILD (
+  PARENT_ID varchar(36) NOT NULL,
+  CHILD_ID varchar(36) NOT NULL,
+  PRIMARY KEY (PARENT_ID, CHILD_ID),
+  KEY FK_CHILD_ID_CONDITION_ID (CHILD_ID),
+  CONSTRAINT FK_CHILD_ID_CONDITION_ID FOREIGN KEY (CHILD_ID) REFERENCES COND_CONDITION (ID),
+  CONSTRAINT FK_PARENT_ID_CONDITION_ID FOREIGN KEY (PARENT_ID) REFERENCES COND_CONDITION (ID)
+);
+-- END S2U-35 --
+
+-- S2U-46 --
+CREATE TABLE `mc_site_synchronization` (
+  `id` varchar(99) NOT NULL,
+  `site_id` varchar(255) NOT NULL,
+  `team_id` varchar(255) NOT NULL,
+  `forced` bit(1) DEFAULT NULL,
+  `date_from` datetime DEFAULT NULL,
+  `date_to` datetime DEFAULT NULL,
+  `status` int DEFAULT NULL,
+  `status_updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UKmc_ss` (`site_id`,`team_id`)
+);
+
+CREATE TABLE `mc_group_synchronization` (
+  `id` varchar(99) NOT NULL,
+  `parentId` varchar(99) DEFAULT NULL,
+  `group_id` varchar(255) NOT NULL,
+  `channel_id` varchar(255) NOT NULL,
+  `status` int DEFAULT NULL,
+  `status_updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UKmc_gs` (`parentId`,`group_id`,`channel_id`),
+  CONSTRAINT `FKmc_gs_ss` FOREIGN KEY (`parentId`) REFERENCES `mc_site_synchronization` (`id`) ON DELETE CASCADE
+);
+
+CREATE TABLE `mc_config_item` (
+  `item_key` varchar(255) NOT NULL,
+  `value` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`item_key`)
+);
+
+CREATE TABLE `mc_log` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `context` longtext,
+  `event` varchar(255) DEFAULT NULL,
+  `event_date` datetime DEFAULT NULL,
+  `status` int DEFAULT NULL,
+  PRIMARY KEY (`id`)
+);
+-- END S2U-46 --
+
+-- S2U-47 --
+CREATE TABLE `meeting_providers` (
+  `provider_id` varchar(99) NOT NULL,
+  `provider_name` varchar(255) NOT NULL,
+  PRIMARY KEY (`provider_id`)
+);
+
+CREATE TABLE `meetings` (
+  `meeting_id` varchar(99) NOT NULL,
+  `meeting_description` text,
+  `meeting_end_date` datetime DEFAULT NULL,
+  `meeting_owner_id` varchar(99) DEFAULT NULL,
+  `meeting_site_id` varchar(99) DEFAULT NULL,
+  `meeting_start_date` datetime DEFAULT NULL,
+  `meeting_title` varchar(255) NOT NULL,
+  `meeting_url` varchar(255) DEFAULT NULL,
+  `meeting_provider_id` varchar(99) DEFAULT NULL,
+  PRIMARY KEY (`meeting_id`),
+  KEY `FK_m_mp` (`meeting_provider_id`),
+  CONSTRAINT `FK_m_mp` FOREIGN KEY (`meeting_provider_id`) REFERENCES `meeting_providers` (`provider_id`)
+);
+
+CREATE TABLE `meeting_properties` (
+  `prop_id` bigint NOT NULL AUTO_INCREMENT,
+  `prop_name` varchar(255) NOT NULL,
+  `prop_value` varchar(255) DEFAULT NULL,
+  `prop_meeting_id` varchar(99) DEFAULT NULL,
+  PRIMARY KEY (`prop_id`),
+  KEY `FK_mp_m` (`prop_meeting_id`),
+  CONSTRAINT `FK_mp_m` FOREIGN KEY (`prop_meeting_id`) REFERENCES `meetings` (`meeting_id`)
+);
+
+CREATE TABLE `meeting_attendees` (
+  `attendee_id` bigint NOT NULL AUTO_INCREMENT,
+  `attendee_object_id` varchar(255) DEFAULT NULL,
+  `attendee_type` int DEFAULT NULL,
+  `attendee_meeting_id` varchar(99) DEFAULT NULL,
+  PRIMARY KEY (`attendee_id`),
+  KEY `FK_ma_m` (`attendee_meeting_id`),
+  CONSTRAINT `FK_ma_m` FOREIGN KEY (`attendee_meeting_id`) REFERENCES `meetings` (`meeting_id`)
+);
+-- END S2U-47 --
+
+-- S2U-49 --
+CREATE TABLE `mc_access_token` (
+  `sakaiUserId` varchar(255) NOT NULL,
+  `accessToken` text,
+  `microsoftUserId` varchar(255) DEFAULT NULL,
+  `account` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`sakaiUserId`)
+);
+-- END S2U-49 --
+
+-- S2U-16 --
+ALTER TABLE `SAM_ITEMGRADING_T` ADD COLUMN `ATTEMPTDATE` DATETIME NULL;
+
+CREATE TABLE `SAM_SECTIONGRADING_T` (
+  `SECTIONGRADINGID` bigint NOT NULL AUTO_INCREMENT,
+  `ASSESSMENTGRADINGID` bigint NOT NULL,
+  `PUBLISHEDSECTIONID` bigint NOT NULL,
+  `AGENTID` varchar(255) NOT NULL,
+  `ATTEMPTDATE` datetime DEFAULT NULL,
+  PRIMARY KEY (`SECTIONGRADINGID`),
+  UNIQUE KEY `uniqueStudentSectionResponse` (`ASSESSMENTGRADINGID`,`PUBLISHEDSECTIONID`,`AGENTID`)
+);
+-- S2U-16 --
+
 -- S2U-19 --
 ALTER TABLE SAM_ITEM_T ADD COLUMN ISFIXED BIT(1) DEFAULT FALSE NOT NULL;
 ALTER TABLE SAM_PUBLISHEDITEM_T ADD COLUMN ISFIXED BIT(1) DEFAULT FALSE NOT NULL;
