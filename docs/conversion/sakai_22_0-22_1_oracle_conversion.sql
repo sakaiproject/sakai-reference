@@ -76,6 +76,8 @@ UPDATE rbc_criterion rc SET rc.order_index = (select rrc.order_index FROM rbc_ru
 UPDATE rbc_rating rc SET rc.criterion_id = (select rcr.rbc_criterion_id FROM rbc_criterion_ratings rcr WHERE rc.id = rcr.ratings_id and rownum<2) WHERE rc.criterion_id is NULL;
 UPDATE rbc_rating rc SET rc.order_index  = (select rcr.order_index FROM rbc_criterion_ratings rcr WHERE rc.id = rcr.ratings_id and rownum<2) WHERE rc.order_index is NULL;
 UPDATE rbc_tool_item_rbc_assoc rti SET rti.siteId = (select rc.ownerId FROM rbc_rubric rc WHERE rti.rubric_id = rc.id) WHERE rti.siteId is NULL;
+DELETE FROM rbc_tool_item_rbc_assoc_conf WHERE association_id IN (SELECT ID FROM rbc_tool_item_rbc_assoc WHERE toolId='sakai.forums' and itemId='top.');
+DELETE FROM rbc_tool_item_rbc_assoc WHERE toolId='sakai.forums' and itemId='top.';
 -- once the above conversion is run successfully then the following tables can be dropped
 -- DROP TABLE rbc_criterion_ratings;
 -- DROP TABLE rbc_rubric_criterions;
