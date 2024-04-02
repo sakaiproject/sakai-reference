@@ -11,15 +11,15 @@ UPDATE SAKAI_SITE_PAGE SET LAYOUT='0' WHERE PAGE_ID='!plussite-100';
 UPDATE SAKAI_SITE_PAGE SET LAYOUT='0' WHERE TITLE='Dashboard';
 -- SAK-49537 END
 
---- SAK-49633
---- Fix Site Type in !plussite template
+-- SAK-49633
+-- Fix Site Type in !plussite template
 UPDATE SAKAI_SITE SET TYPE='course' WHERE SITE_ID = '!plussite';
---- SAK-49633 END
+-- SAK-49633 END
 
---- SAK-49652
---- Fix Custom Order in !plussite template
+-- SAK-49652
+-- Fix Custom Order in !plussite template
 UPDATE SAKAI_SITE SET CUSTOM_PAGE_ORDERED='1' WHERE SITE_ID='!plussite';
---- SAK-49652 END
+-- SAK-49652 END
 
 -- SAK-49584
 UPDATE GB_GRADEBOOK_T SET GRADE_TYPE = 1 WHERE GRADE_TYPE = 0;
