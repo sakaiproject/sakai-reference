@@ -615,3 +615,8 @@ INSERT INTO SAKAI_REALM_RL_FN SELECT (select REALM_KEY from SAKAI_REALM where RE
 INSERT INTO SAKAI_REALM_RL_FN SELECT (select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.lti') AS REALM_KEY, (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Member') AS ROLE_KEY, FUNCTION_KEY FROM SAKAI_REALM_RL_FN WHERE REALM_KEY = (select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.lti') AND ROLE_KEY = (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Mentor');
 
 -- END SAK-48085
+
+-- START SAK-41579
+update rbc_tool_item_rbc_assoc set toolId='sakai.assignment.grades' where toolId='sakai.assignment';
+-- END SAK-41579
+
