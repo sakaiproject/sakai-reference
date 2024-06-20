@@ -293,3 +293,14 @@ CREATE SEQUENCE SAM_SECTIONGRADING_T_SEQ START WITH 1 INCREMENT BY 1;
 ALTER TABLE SAM_ITEM_T ADD ISFIXED NUMBER(1,0) DEFAULT 0 NOT NULL;
 ALTER TABLE SAM_PUBLISHEDITEM_T ADD ISFIXED NUMBER(1,0) DEFAULT 0 NOT NULL;
 -- END S2U-19 --
+
+
+-- SAK-46714 --
+ALTER TABLE lti_tools DROP lti13_platform_public_next;
+ALTER TABLE lti_tools DROP lti13_platform_public_next_at;
+ALTER TABLE lti_tools DROP lti13_platform_private_next;
+ALTER TABLE lti_tools DROP lti13_platform_public;
+ALTER TABLE lti_tools DROP lti13_platform_private;
+ALTER TABLE lti_tools DROP lti13_platform_public_old;
+ALTER TABLE lti_tools DROP lti13_platform_public_old_at; 
+-- END SAK-46714 --
