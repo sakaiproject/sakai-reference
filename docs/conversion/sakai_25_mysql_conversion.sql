@@ -171,7 +171,7 @@ ALTER TABLE rbc_rubric ADD adhoc bit(1) DEFAULT 0;
 -- S2U-35 --
 CREATE TABLE COND_CONDITION (
   ID varchar(36) NOT NULL,
-  TYPE varchar(99) NOT NULL,
+  COND_TYPE varchar(99) NOT NULL,
   OPERATOR varchar(99) DEFAULT NULL,
   ARGUMENT varchar(999) DEFAULT NULL,
   SITE_ID varchar(36) NOT NULL,
