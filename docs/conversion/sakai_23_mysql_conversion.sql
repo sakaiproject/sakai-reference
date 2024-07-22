@@ -624,7 +624,7 @@ update rbc_tool_item_rbc_assoc set toolId='sakai.assignment.grades' where toolId
 CREATE TEMPORARY TABLE temp_uuids AS
   SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(RESOURCE_ID, '/', -2), '/', 1) AS extracted_uuid FROM CONTENT_RESOURCE WHERE RESOURCE_ID LIKE '/group/%/site_icon_image.png';
 
-INSERT INTO SAKAI_SITE_PROPERTY (SITE_ID, PROPERTY_NAME, PROPERTY_VALUE) SELECT extracted_uuid, 'custom_image_url', 'site_icon_image.png' FROM temp_uuids;
+INSERT INTO SAKAI_SITE_PROPERTY (SITE_ID, PROPERTY_NAME, PROPERTY_VALUE) SELECT extracted_uuid, 'custom_image_url', CONCAT('/access/content/group/', extracted_uuid, '/site_icon_image.png') FROM temp_uuids;
 
 DROP TEMPORARY TABLE temp_uuids;
 -- END SAK-46635
