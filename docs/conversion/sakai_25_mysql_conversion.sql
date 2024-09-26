@@ -315,3 +315,33 @@ ALTER TABLE `lti_tools` DROP `lti13_platform_public_old`;
 ALTER TABLE `lti_tools` DROP `lti13_platform_public_old_at`; 
 -- END SAK-46714 --
 
+-- SAK-50378 --
+-- These are columns dropped by SAK-50378 but will not be dropped by 
+-- the Sakai 25 conversion scripts until Sakai 25.2 or later
+-- New Sakai 25 instances won't have these columns but the columns will
+-- not be removed as systems go from Sakai 23 to Sakai 25.0 or 25.1 to allow
+-- for forward and backward version movement for early versions of Sakai 25
+-- They are included here to note than when the schema comparison
+-- is done prior to the 25 release - these will show up but not be included
+-- in the final 25.0 conversion script
+
+-- ALTER TABLE lti_content DROP COLUMN pagetitle;
+-- ALTER TABLE lti_content DROP COLUMN toolorder;
+-- ALTER TABLE lti_content DROP COLUMN consumerkey;
+-- ALTER TABLE lti_content DROP COLUMN secret;
+-- ALTER TABLE lti_content DROP COLUMN settings_ext;
+-- ALTER TABLE lti_content DROP COLUMN fa_icon;
+
+-- ALTER TABLE lti_tools DROP COLUMN allowtitle;
+-- ALTER TABLE lti_tools DROP COLUMN pagetitle;
+-- ALTER TABLE lti_tools DROP COLUMN allowpagetitle;
+-- ALTER TABLE lti_tools DROP COLUMN allowlaunch;
+-- ALTER TABLE lti_tools DROP COLUMN allowframeheight;
+-- ALTER TABLE lti_tools DROP COLUMN allowfa_icon;
+-- ALTER TABLE lti_tools DROP COLUMN toolorder;
+-- ALTER TABLE lti_tools DROP COLUMN allowsettings_ext;
+-- ALTER TABLE lti_tools DROP COLUMN allowconsumerkey;
+-- ALTER TABLE lti_tools DROP COLUMN allowsecret;
+-- ALTER TABLE lti_tools DROP COLUMN lti11_launch_type;
+-- END SAK-50378 --
+
