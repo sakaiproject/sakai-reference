@@ -200,3 +200,13 @@ CREATE INDEX CONTENT_RESOURCE_FILE_PATH_DELETE_I ON CONTENT_RESOURCE_DELETE (FIL
 update rbc_tool_item_rbc_assoc set toolId='sakai.assignment.grades' where toolId='sakai.assignment';
 -- END SAK-41579
 
+-- START SAK-46635
+CREATE GLOBAL TEMPORARY TABLE temp_uuids ( extracted_uuid VARCHAR2(36)) ON COMMIT DELETE ROWS;
+
+INSERT INTO temp_uuids (extracted_uuid)
+  SELECT REGEXP_SUBSTR(RESOURCE_ID, '[^/]+', 1, 3) AS extracted_uuid FROM CONTENT_RESOURCE WHERE RESOURCE_ID LIKE '/group/%/site_icon_image.png';
+
+INSERT INTO SAKAI_SITE_PROPERTY (SITE_ID, PROPERTY_NAME, PROPERTY_VALUE) SELECT extracted_uuid, 'custom_image_url', '/access/content/group/' || extracted_uuid || 'site_icon_image.png' FROM temp_uuids;
+
+DROP TABLE temp_uuids;
+-- END SAK-46635
