@@ -57,15 +57,15 @@ ALTER TABLE rbc_rating DROP COLUMN shared;
 ALTER TABLE rbc_tool_item_rbc_assoc DROP COLUMN shared;
 ALTER TABLE rbc_tool_item_rbc_assoc DROP COLUMN ownerId;
 ALTER TABLE rbc_criterion_outcome MODIFY pointsAdjusted BIT(1) NULL;
-ALTER TABLE rbc_criterion_outcome ALTER pointsAdjusted SET DEFAULT 0;
+ALTER TABLE rbc_criterion_outcome MODIFY pointsAdjusted SET DEFAULT 0;
 ALTER TABLE rbc_returned_criterion_out MODIFY pointsAdjusted BIT(1) NULL;
-ALTER TABLE rbc_returned_criterion_out ALTER pointsAdjusted SET DEFAULT 0;
+ALTER TABLE rbc_returned_criterion_out MODIFY pointsAdjusted SET DEFAULT 0;
 ALTER TABLE rbc_rubric MODIFY shared BIT(1) NULL;
-ALTER TABLE rbc_rubric ALTER shared SET DEFAULT 0;
-ALTER TABLE rbc_criterion ALTER weight SET DEFAULT null;
+ALTER TABLE rbc_rubric MODIFY shared SET DEFAULT 0;
+ALTER TABLE rbc_criterion MODIFY weight SET DEFAULT null;
 ALTER TABLE rbc_rubric MODIFY weighted BIT(1) NULL;
-ALTER TABLE rbc_rubric ALTER weighted SET DEFAULT 0;
-DROP INDEX rbc_tool_item_owner ON rbc_tool_item_rbc_assoc;
+ALTER TABLE rbc_rubric MODIFY weighted SET DEFAULT 0;
+DROP INDEX rbc_tool_item_owner;
 CREATE INDEX rbc_tool_item_owner ON rbc_tool_item_rbc_assoc (toolId, itemId, siteId);
 
 -- this migrates the data from the link tables
