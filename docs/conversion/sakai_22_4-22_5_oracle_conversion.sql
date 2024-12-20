@@ -1,0 +1,1 @@
+-- No database changes from Sakai 22.4 to 22.5
