@@ -18,13 +18,13 @@ ALTER TABLE rbc_rating ADD order_index INT DEFAULT null NULL;
 UPDATE rbc_rating SET order_index = 0 WHERE order_index is NULL;
 
 -- populate existing records with a default order
-DROP TEMPORARY TABLE IF EXISTS temp_rbc_criterion;
-DROP TEMPORARY TABLE IF EXISTS temp_rbc_rating;
-CREATE TEMPORARY TABLE IF NOT EXISTS temp_rbc_criterion AS ( SELECT criterion_id FROM rbc_rating GROUP BY criterion_id, order_index HAVING COUNT(order_index) > 1 );
-CREATE TEMPORARY TABLE IF NOT EXISTS temp_rbc_rating ( id BIGINT, order_index INT );
+DROP TABLE temp_rbc_criterion;
+DROP TABLE temp_rbc_rating;
+CREATE GLOBAL TEMPORARY TABLE temp_rbc_criterion AS ( SELECT criterion_id FROM rbc_rating GROUP BY criterion_id, order_index HAVING COUNT(order_index) > 1 );
+CREATE GLOBAL TEMPORARY TABLE temp_rbc_rating ( id NUMBER(19,0), order_index INT );
 
 DELIMITER //
-DROP PROCEDURE IF EXISTS ORDERINDEX;
+DROP PROCEDURE ORDERINDEX;
 CREATE PROCEDURE ORDERINDEX() MODIFIES SQL DATA
 BEGIN
    DECLARE cid BIGINT;
@@ -55,7 +55,7 @@ DELIMITER ;
 CALL ORDERINDEX();
 
 -- cleanup
-DROP PROCEDURE IF EXISTS ORDERINDEX;
-DROP TEMPORARY TABLE IF EXISTS temp_rbc_criterion;
-DROP TEMPORARY TABLE IF EXISTS temp_rbc_rating;
+DROP PROCEDURE ORDERINDEX;
+DROP TABLE temp_rbc_criterion;
+DROP TABLE temp_rbc_rating;
 -- SAK-48423 END
