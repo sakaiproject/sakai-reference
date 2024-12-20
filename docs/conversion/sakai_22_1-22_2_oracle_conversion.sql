@@ -12,9 +12,9 @@ ALTER TABLE rbc_criterion_outcome DROP CONSTRAINT FKalvarr6g412wt7wto6tutsddu;
 ALTER TABLE rbc_criterion DROP COLUMN ownerId;
 ALTER TABLE rbc_tool_item_rbc_assoc DROP COLUMN siteId;
 ALTER TABLE rbc_rating MODIFY criterion_id NUMBER(19,0) NOT NULL;
-ALTER TABLE rbc_rating ALTER criterion_id DEFAULT NULL;
+ALTER TABLE rbc_rating MODIFY criterion_id DEFAULT NULL;
 ALTER TABLE rbc_tool_item_rbc_assoc MODIFY rubric_id NUMBER(19,0) NOT NULL;
-ALTER TABLE rbc_tool_item_rbc_assoc ALTER rubric_id DEFAULT NULL;
+ALTER TABLE rbc_tool_item_rbc_assoc MODIFY rubric_id DEFAULT NULL;
 
 CREATE INDEX rbc_tool_item ON rbc_tool_item_rbc_assoc(toolId, itemId);
 -- SAK-47837 end
