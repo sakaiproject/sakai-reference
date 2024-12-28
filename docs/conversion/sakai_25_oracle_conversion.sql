@@ -341,15 +341,23 @@ ALTER TABLE SAM_ITEM_T ADD ISFIXED NUMBER(1,0) DEFAULT 0 NOT NULL;
 ALTER TABLE SAM_PUBLISHEDITEM_T ADD ISFIXED NUMBER(1,0) DEFAULT 0 NOT NULL;
 -- END S2U-19 --
 
-
 -- SAK-46714 --
-ALTER TABLE lti_tools DROP lti13_platform_public_next;
-ALTER TABLE lti_tools DROP lti13_platform_public_next_at;
-ALTER TABLE lti_tools DROP lti13_platform_private_next;
-ALTER TABLE lti_tools DROP lti13_platform_public;
-ALTER TABLE lti_tools DROP lti13_platform_private;
-ALTER TABLE lti_tools DROP lti13_platform_public_old;
-ALTER TABLE lti_tools DROP lti13_platform_public_old_at; 
+-- These are columns dropped by SAK-46714 but will not be dropped by 
+-- the Sakai 25 conversion scripts until Sakai 25.2 or later
+-- New Sakai 25 instances won't have these columns but the columns will
+-- not be removed as systems go from Sakai 23 to Sakai 25.0 or 25.1 to allow
+-- for forward and backward version movement for early versions of Sakai 25
+-- They are included here to note than when the schema comparison
+-- is done prior to the 25 release - these will show up but not be included
+-- in the final 25.0 conversion script
+
+-- ALTER TABLE lti_tools DROP lti13_platform_public_next;
+-- ALTER TABLE lti_tools DROP lti13_platform_public_next_at;
+-- ALTER TABLE lti_tools DROP lti13_platform_private_next;
+-- ALTER TABLE lti_tools DROP lti13_platform_public;
+-- ALTER TABLE lti_tools DROP lti13_platform_private;
+-- ALTER TABLE lti_tools DROP lti13_platform_public_old;
+-- ALTER TABLE lti_tools DROP lti13_platform_public_old_at; 
 -- END SAK-46714 --
 
 -- SAK-50378 --
