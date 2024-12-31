@@ -380,3 +380,17 @@ ALTER TABLE `lti_tools` DROP `lti13_platform_public_old_at`;
 -- ALTER TABLE lti_tools DROP COLUMN lti11_launch_type;
 -- END SAK-50378 --
 
+-- SAK-50536
+drop table PROFILE_COMPANY_PROFILES_T;
+drop table PROFILE_GALLERY_IMAGES_T;
+drop table PROFILE_MESSAGE_PARTICIPANTS_T;
+drop table PROFILE_MESSAGE_THREADS_T;
+drop table PROFILE_MESSAGES_T;
+drop table PROFILE_FRIENDS_T;
+drop table PROFILE_KUDOS_T;
+drop table PROFILE_PRIVACY_T;
+drop table PROFILE_STATUS_T;
+drop table PROFILE_WALL_ITEMS_T;
+drop table PROFILE_WALL_ITEM_COMMENTS_T;
+alter table PROFILE_SOCIAL_INFO_T drop column SKYPE_USERNAME;
+-- END SAK-50536
