@@ -457,3 +457,464 @@ INSERT INTO SAKAI_REALM_RL_FN (REALM_KEY, ROLE_KEY, FUNCTION_KEY) VALUES (
     (SELECT FUNCTION_KEY FROM SAKAI_REALM_FUNCTION WHERE FUNCTION_NAME = 'conversations.discussion.create')
 );
 -- END SAK-47843
+
+-- SAK-50200
+create table SCORM_ACTIVITY_TREE_HOLDER_T (
+        HOLDER_ID number(19,0) not null,
+        CONTENT_PACKAGE_ID number(19,0),
+        LEARNER_ID varchar2(255),
+        ACT_TREE blob,
+        primary key (HOLDER_ID)
+);
+
+create table SCORM_ADL_VALID_REQUESTS_T (
+	VALID_REQUESTS_ID number(19,0) not null,
+	IS_START_ENABLED number(1,0),
+	IS_RESUME_ALL_ENABLED number(1,0),
+	IS_CONTINUE_ENABLED number(1,0),
+	IS_CONTINUE_EXIT_ENABLED number(1,0),
+	IS_PREVIOUS_ENABLED number(1,0),
+	IS_SUSPEND_VALID number(1,0),
+	primary key (VALID_REQUESTS_ID)
+);
+
+create table SCORM_ATTEMPT_T (
+	ATTEMPT_ID number(19,0) not null,
+	CONTENT_PACKAGE_ID number(19,0),
+	COURSE_ID varchar2(255),
+	LEARNER_ID varchar2(255),
+	LEARNER_NAME varchar2(255),
+	ATTEMPT_NUMBER number(19,0),
+	CREATED_ON date,
+	MODIFIED_ON date,
+	IS_SUSPENDED number(1,0),
+	IS_NOT_EXITED number(1,0),
+	primary key (ATTEMPT_ID)
+);
+
+create table SCORM_CONTENT_PACKAGE_T (
+	PACKAGE_ID number(19,0) not null,
+	TITLE varchar2(255),
+	RESOURCE_ID varchar2(255),
+	MANIFEST_ID raw(255),
+	MANIFEST_RESOURCE_ID varchar2(255),
+	CONTEXT varchar2(255),
+	URL varchar2(255),
+	RELEASE_ON date,
+	DUE_ON date,
+	ACCEPT_UNTIL date,
+	CREATED_ON date,
+	CREATED_BY varchar2(255),
+	MODIFIED_ON date,
+	MODIFIED_BY varchar2(255),
+	NUMBER_OF_TRIES number(10,0),
+	IS_DELETED number(1,0),
+	primary key (PACKAGE_ID)
+);
+
+create table SCORM_CP_MANIFEST_T (
+	MANIFEST_ID number(19,0) not null,
+	ACT_TREE_PROTOTYPE blob,
+	primary key (MANIFEST_ID)
+);
+
+create table SCORM_DATAMANAGER_T (
+	DATAMANAGER_ID number(19,0) not null,
+	CONTENT_PACKAGE_ID number(19,0),
+	COURSE_ID varchar2(255),
+	SCO_ID varchar2(255),
+	ACTIVITY_ID varchar2(255),
+	USER_ID varchar2(255),
+	TITLE varchar2(255),
+	ATTEMPT_NUMBER number(19,0),
+	BEGIN_DATE date,
+	LAST_MODIFIED_DATE date,
+	primary key (DATAMANAGER_ID)
+);
+
+create table SCORM_DATAMODEL_T (
+	DATAMODEL_ID number(19,0) not null,
+	CLASS_TYPE varchar2(255) not null,
+	BINDING varchar2(255),
+	NAV_REQUESTS number(19,0),
+	CURRENT_REQUEST varchar2(255),
+	LEARNER_ID varchar2(255),
+	SCO_ID varchar2(255),
+	PROTOCOL varchar2(255),
+	HOST varchar2(255),
+	PORT number(10,0),
+	FILE_NAME varchar2(255),
+	AUTHORITY varchar2(255),
+	REF varchar2(255),
+	COURSE_ID varchar2(255),
+	ATTEMPT_NUMBER varchar2(255),
+	primary key (DATAMODEL_ID)
+);
+
+create table SCORM_DELIMITER_T (
+	DELIM_ID number(19,0) not null,
+	DESC_NAME varchar2(255),
+	DEFAULT_VALUE varchar2(255),
+	VALUE_SPM number(10,0),
+	VALIDATOR number(19,0),
+	VALUE varchar2(255),
+	primary key (DELIM_ID)
+);
+
+create table SCORM_DELIMIT_DESC_T (
+	DELIM_DESC_ID number(19,0) not null,
+	DESC_NAME varchar2(255),
+	DEFAULT_VALUE varchar2(255),
+	VALUE_SPM number(10,0),
+	VALIDATOR number(19,0),
+	primary key (DELIM_DESC_ID)
+);
+
+create table SCORM_ELEMENT_DESC_T (
+	ELEM_DESC_ID number(19,0) not null,
+	ED_BINDING varchar2(255),
+	IS_READABLE number(1,0),
+	IS_WRITABLE number(1,0),
+	INITIAL_VALUE varchar2(255),
+	IS_UNIQUE number(1,0),
+	IS_WRITE_ONCE number(1,0),
+	VALUE_SPM number(10,0),
+	SPM number(10,0),
+	OLD_SPM number(10,0),
+	IS_MAXIMUM number(1,0),
+	IS_SHOW_CHILDREN number(1,0),
+	primary key (ELEM_DESC_ID)
+);
+
+create table SCORM_ELEMENT_T (
+	ELEMENT_ID number(19,0) not null,
+	CLASS_TYPE varchar2(255) not null,
+	DESCRIPTION number(19,0),
+	PARENT number(19,0),
+	VALUE clob,
+	IS_INITIALIZED number(1,0),
+	TRUNC_SPM number(1,0),
+	ELEMENT_DM number(19,0),
+	NAVIGATION_DM number(19,0),
+	BINDING varchar2(255),
+	IS_RANDOMIZED number(1,0),
+	DM_COUNT number(10,0),
+	primary key (ELEMENT_ID)
+);
+
+create table SCORM_LAUNCH_DATA_T (
+	LAUNCH_DATA_ID number(19,0) not null,
+	ORG_IDENTIFIER varchar2(255),
+	ITEM_IDENTIFIER varchar2(255),
+	RESOURCE_IDENTIFIER varchar2(255),
+	MANIFEST_XML_BASE varchar2(255),
+	RESOURCES_XML_BASE varchar2(255),
+	RESOURCE_XML_BASE varchar2(255),
+	PARAMETERS varchar2(255),
+	PERSIST_STATE varchar2(255),
+	LOCATION varchar2(255),
+	SCORM_TYPE varchar2(255),
+	ITEM_TITLE varchar2(255),
+	DATA_FROM_LMS varchar2(4000),
+	TIME_LIMIT_ACTION varchar2(255),
+	MIN_NORMALIZED_MEASURE varchar2(255),
+	ATTEMPT_ABS_DUR_LIMIT varchar2(255),
+	COMPLETION_THRESHOLD varchar2(255),
+	OBJECTIVES_LIST varchar2(255),
+	IS_PREVIOUS number(1,0),
+	IS_CONTINUE number(1,0),
+	IS_EXIT number(1,0),
+	IS_EXIT_ALL number(1,0),
+	IS_ABANDON number(1,0),
+	IS_SUSPEND_ALL number(1,0),
+	primary key (LAUNCH_DATA_ID)
+);
+
+create table SCORM_LIST_BINDINGS_T (
+	ELEMENT_ID number(19,0) not null,
+	BINDING varchar2(255),
+	SORT_ORDER number(10,0) not null,
+	primary key (ELEMENT_ID, SORT_ORDER)
+);
+
+create table SCORM_LIST_DELIMITERS_T (
+	ELEMENT_ID number(19,0) not null,
+	DELIM_ID number(19,0) not null,
+	SORT_ORDER number(10,0) not null,
+	primary key (ELEMENT_ID, SORT_ORDER)
+);
+
+create table SCORM_LIST_DELIM_DESC_T (
+	ELEM_DESC_ID number(19,0) not null,
+	DELIM_DESC_ID number(19,0) not null,
+	SORT_ORDER number(10,0) not null,
+	primary key (ELEM_DESC_ID, SORT_ORDER)
+);
+
+create table SCORM_LIST_ELEMENTS_T (
+	DATAMODEL_ID number(19,0) not null,
+	ELEMENT_ID number(19,0) not null,
+	SORT_ORDER number(10,0) not null,
+	primary key (DATAMODEL_ID, SORT_ORDER)
+);
+
+create table SCORM_LIST_ELEM_DESC_T (
+	ELEM_DESC_ID number(19,0) not null,
+	CHILD_ID number(19,0) not null,
+	SORT_ORDER number(10,0) not null,
+	primary key (ELEM_DESC_ID, SORT_ORDER)
+);
+
+create table SCORM_LIST_LAUNCH_DATA_T (
+	MANIFEST_ID number(19,0) not null,
+	LAUNCH_DATA_ID number(19,0) not null,
+	SORT_ORDER number(10,0) not null,
+	primary key (MANIFEST_ID, SORT_ORDER)
+);
+
+create table SCORM_LIST_RECORDS_T (
+	ELEMENT_ID number(19,0) not null,
+	RECORD_ID number(19,0) not null,
+	SORT_ORDER number(10,0) not null,
+	primary key (ELEMENT_ID, SORT_ORDER)
+);
+
+create table SCORM_MAP_CHILDREN_T (
+	ELEMENT_ID number(19,0) not null,
+	CHILD_ID number(19,0) not null,
+	CHILD_BINDING varchar2(255) not null,
+	primary key (ELEMENT_ID, CHILD_BINDING)
+);
+
+create table SCORM_MAP_DATAMODELS_T (
+	DATAMANAGER_ID number(19,0) not null,
+	DATAMODEL_ID number(19,0) not null,
+	DM_BINDING varchar2(255) not null,
+	primary key (DATAMANAGER_ID, DM_BINDING)
+);
+
+create table SCORM_MAP_ELEMENTS_T (
+	DATAMODEL_ID number(19,0) not null,
+	ELEMENT_ID number(19,0) not null,
+	ELEMENT_BINDING varchar2(255) not null,
+	primary key (DATAMODEL_ID, ELEMENT_BINDING)
+);
+
+create table SCORM_MAP_SCO_DATAMANAGER_T (
+	ATTEMPT_ID number(19,0) not null,
+	DATAMANAGER_ID number(19,0),
+	SCO_ID varchar2(255) not null,
+	primary key (ATTEMPT_ID, SCO_ID)
+);
+
+create table SCORM_TYPE_VALIDATOR_T (
+	ID number(19,0) not null,
+	VALIDATOR_TYPE varchar2(255) not null,
+	TYPE varchar2(255),
+	INCLUDE_SUB_SECS number(1,0),
+	INTER_ALLOW_EMPTY number(1,0),
+	ELEMENT varchar2(255),
+	INTERACTION_TYPE number(10,0),
+	INT_MAX number(10,0),
+	INT_MIN number(10,0),
+	LANG_ALLOW_EMPTY number(1,0),
+	REAL_MAX double precision,
+	REAL_MIN double precision,
+	RESULT_VOCAB_LIST raw(255),
+	SPM number(10,0),
+	URI_SPM number(10,0),
+	VOCAB_LIST raw(255),
+	primary key (ID)
+);
+
+create table SCORM_URL (
+	URL_ID number(19,0) not null,
+	PROTOCOL varchar2(255),
+	HOST varchar2(255),
+	PORT number(10,0),
+	FILE_NAME varchar2(255),
+	AUTHORITY varchar2(255),
+	REF varchar2(255),
+	primary key (URL_ID)
+);
+
+create index SCORM_DM_NAV_REQS_IDX on SCORM_DATAMODEL_T (NAV_REQUESTS);
+
+alter table SCORM_DATAMODEL_T
+	add constraint FKEA49336F15518963
+	foreign key (NAV_REQUESTS)
+	references SCORM_ADL_VALID_REQUESTS_T;
+
+create index SCORM_DELIM_DESC_VAL_IDX on SCORM_DELIMITER_T (VALIDATOR);
+
+alter table SCORM_DELIMITER_T
+	add constraint FK4EF961B7B90DB7D6
+	foreign key (VALIDATOR)
+	references SCORM_TYPE_VALIDATOR_T;
+
+alter table SCORM_DELIMIT_DESC_T
+	add constraint FK94E28AB0B90DB7D6
+	foreign key (VALIDATOR)
+	references SCORM_TYPE_VALIDATOR_T;
+
+alter table SCORM_ELEMENT_T
+	add constraint FK573F602CCC73593B
+	foreign key (NAVIGATION_DM)
+	references SCORM_DATAMODEL_T;
+
+alter table SCORM_ELEMENT_T
+	add constraint FK573F602C5FFAD0D3
+	foreign key (DESCRIPTION)
+	references SCORM_ELEMENT_DESC_T;
+
+alter table SCORM_ELEMENT_T
+	add constraint FK573F602C6C5A23E6
+	foreign key (ELEMENT_DM)
+	references SCORM_DATAMODEL_T;
+
+alter table SCORM_ELEMENT_T
+	add constraint FK573F602CB9181FF2
+	foreign key (PARENT)
+	references SCORM_ELEMENT_T;
+
+alter table SCORM_LIST_BINDINGS_T
+	add constraint FKC3B4D95FB51407A8
+	foreign key (ELEMENT_ID)
+	references SCORM_ELEMENT_T;
+
+alter table SCORM_LIST_DELIMITERS_T
+	add constraint FKEE1279D16C13886
+	foreign key (ELEMENT_ID)
+	references SCORM_ELEMENT_T;
+
+alter table SCORM_LIST_DELIMITERS_T
+	add constraint FKEE1279DBF0F683E
+	foreign key (DELIM_ID)
+	references SCORM_DELIMITER_T;
+
+alter table SCORM_LIST_DELIM_DESC_T
+	add constraint FK7F5CED925C1B7EDB
+	foreign key (DELIM_DESC_ID)
+	references SCORM_DELIMIT_DESC_T;
+
+alter table SCORM_LIST_DELIM_DESC_T
+	add constraint FK7F5CED92BCF1DB0
+	foreign key (ELEM_DESC_ID)
+	references SCORM_ELEMENT_DESC_T;
+
+alter table SCORM_LIST_ELEMENTS_T
+	add constraint FK8BBE81883718242
+	foreign key (DATAMODEL_ID)
+	references SCORM_DATAMODEL_T;
+
+alter table SCORM_LIST_ELEMENTS_T
+	add constraint FK8BBE818816C13886
+	foreign key (ELEMENT_ID)
+	references SCORM_ELEMENT_T;
+
+alter table SCORM_LIST_ELEM_DESC_T
+	add constraint FK398F75DA29AF63F5
+	foreign key (CHILD_ID)
+	references SCORM_ELEMENT_DESC_T;
+
+alter table SCORM_LIST_ELEM_DESC_T
+	add constraint FK398F75DABCF1DB0
+	foreign key (ELEM_DESC_ID)
+	references SCORM_ELEMENT_DESC_T;
+
+alter table SCORM_LIST_LAUNCH_DATA_T
+	add constraint FK34C18F0FDCBCFBA4
+	foreign key (MANIFEST_ID)
+	references SCORM_CP_MANIFEST_T;
+
+alter table SCORM_LIST_LAUNCH_DATA_T
+	add constraint FK34C18F0F288F42D7
+	foreign key (LAUNCH_DATA_ID)
+	references SCORM_LAUNCH_DATA_T;
+
+alter table SCORM_LIST_RECORDS_T
+	add constraint FK9133CF7B16C13886
+	foreign key (ELEMENT_ID)
+	references SCORM_ELEMENT_T;
+
+alter table SCORM_LIST_RECORDS_T
+	add constraint FK9133CF7B2FA56F11
+	foreign key (RECORD_ID)
+	references SCORM_ELEMENT_T;
+
+alter table SCORM_MAP_CHILDREN_T
+	add constraint FK33DB495C57572E66
+	foreign key (CHILD_ID)
+	references SCORM_ELEMENT_T;
+
+alter table SCORM_MAP_CHILDREN_T
+	add constraint FK33DB495C16C13886
+	foreign key (ELEMENT_ID)
+	references SCORM_ELEMENT_T;
+
+alter table SCORM_MAP_DATAMODELS_T
+	add constraint FKC5D1D6B1DA8EBA2F
+	foreign key (DATAMODEL_ID)
+	references SCORM_DATAMODEL_T;
+
+alter table SCORM_MAP_DATAMODELS_T
+	add constraint FKC5D1D6B13D997146
+	foreign key (DATAMANAGER_ID)
+	references SCORM_DATAMANAGER_T;
+
+alter table SCORM_MAP_ELEMENTS_T
+	add constraint FK464CE542FEFA42
+	foreign key (DATAMODEL_ID)
+	references SCORM_DATAMODEL_T;
+
+alter table SCORM_MAP_ELEMENTS_T
+	add constraint FK464CE54FADFC393
+	foreign key (ELEMENT_ID)
+	references SCORM_ELEMENT_T;
+
+alter table SCORM_MAP_SCO_DATAMANAGER_T
+	add constraint FK194F83307DC2A49D
+	foreign key (ATTEMPT_ID)
+	references SCORM_ATTEMPT_T;
+
+create sequence SCORM_UID_S MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20;
+
+ALTER TABLE SCORM_CONTENT_PACKAGE_T ADD SHOW_TOC NUMBER(1,0) DEFAULT 0 NOT NULL;
+ALTER TABLE SCORM_CONTENT_PACKAGE_T ADD SHOW_NAV_BAR NUMBER(1,0) DEFAULT 0 NOT NULL;
+
+ALTER TABLE SCORM_ELEMENT_T ADD (VALUE2 CLOB);
+ALTER TABLE SCORM_ELEMENT_T DROP COLUMN VALUE;
+ALTER TABLE SCORM_ELEMENT_T RENAME COLUMN VALUE2 TO VALUE;
+
+INSERT INTO SAKAI_REALM_FUNCTION VALUES (SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'scorm.configure');
+INSERT INTO SAKAI_REALM_FUNCTION VALUES (SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'scorm.delete');
+INSERT INTO SAKAI_REALM_FUNCTION VALUES (SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'scorm.grade');
+INSERT INTO SAKAI_REALM_FUNCTION VALUES (SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'scorm.launch');
+INSERT INTO SAKAI_REALM_FUNCTION VALUES (SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'scorm.upload');
+INSERT INTO SAKAI_REALM_FUNCTION VALUES (SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'scorm.validate');
+INSERT INTO SAKAI_REALM_FUNCTION VALUES (SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'scorm.view.results');
+
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'access'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.launch'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'maintain'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.configure'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'maintain'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.delete'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'maintain'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.grade'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'maintain'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.launch'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'maintain'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.upload'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'maintain'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.validate'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'maintain'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.view.results'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Instructor'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.configure'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Instructor'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.delete'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Instructor'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.grade'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Instructor'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.launch'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Instructor'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.upload'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Instructor'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.validate'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Instructor'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.view.results'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Student'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.launch'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Teaching Assistant'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.configure'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Teaching Assistant'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.delete'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Teaching Assistant'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.grade'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Teaching Assistant'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.launch'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Teaching Assistant'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.upload'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Teaching Assistant'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.validate'));
+INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Teaching Assistant'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.view.results'));
+-- END SAK-50200
