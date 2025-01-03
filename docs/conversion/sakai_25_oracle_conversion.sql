@@ -1,11 +1,18 @@
 -- SAK-48106
-UPDATE user_audits_log audits INNER JOIN SAKAI_USER_ID_MAP idmap ON audits.user_id = idmap.eid SET audits.user_id = idmap.user_id;
-UPDATE user_audits_log audits INNER JOIN SAKAI_USER_ID_MAP idmap ON audits.action_user_id = idmap.eid SET audits.action_user_id = idmap.user_id;
+UPDATE user_audits_log audits SET audits.user_id = (SELECT idmap.user_id FROM SAKAI_USER_ID_MAP idmap WHERE idmap.eid = audits.user_id) WHERE EXISTS (SELECT 1 FROM SAKAI_USER_ID_MAP idmap WHERE idmap.eid = audits.user_id);
+UPDATE user_audits_log audits SET audits.action_user_id = (SELECT idmap.user_id FROM SAKAI_USER_ID_MAP idmap WHERE idmap.eid = audits.action_user_id) WHERE EXISTS (SELECT 1 FROM SAKAI_USER_ID_MAP idmap WHERE idmap.eid = audits.action_user_id); 
 -- END SAK-48106
 
 -- S2U-12 --
-ALTER TABLE sam_itemfeedback_t MODIFY TEXT LONGTEXT;
-ALTER TABLE sam_publisheditemfeedback_t MODIFY TEXT LONGTEXT;
+ALTER TABLE sam_itemfeedback_t ADD TEXT_CLOB CLOB;
+UPDATE sam_itemfeedback_t set TEXT_CLOB = TEXT;  -- convert varchar2 to CLOB
+ALTER TABLE sam_itemfeedback_t drop column TEXT;
+ALTER TABLE sam_itemfeedback_t RENAME COLUMN TEXT_CLOB TO TEXT;
+
+ALTER TABLE sam_publisheditemfeedback_t ADD TEXT_CLOB CLOB;
+UPDATE sam_publisheditemfeedback_t set TEXT_CLOB = TEXT;  -- convert varchar2 to CLOB
+ALTER TABLE sam_publisheditemfeedback_t drop column TEXT;
+ALTER TABLE sam_publisheditemfeedback_t RENAME COLUMN TEXT_CLOB TO TEXT;
 -- End S2U-12 --
 
 -- S2U-42 --
@@ -83,7 +90,7 @@ CREATE TABLE tagservice_tagassociation (
 ALTER TABLE tagservice_tag MODIFY taglabel VARCHAR2(255 CHAR);
 
 -- Permission added in 12 might not be present 
-INSERT IGNORE INTO SAKAI_REALM_FUNCTION (FUNCTION_NAME) VALUES ('tagservice.manage');
+INSERT INTO SAKAI_REALM_FUNCTION (FUNCTION_KEY, FUNCTION_NAME) VALUES(SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, 'tagservice.manage');
 -- Add this for every role able to create and manage tags on a site, you'll need to add the tool too
 INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'maintain'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'tagservice.manage'));
 INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Instructor'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'tagservice.manage'));
@@ -244,7 +251,7 @@ CREATE TABLE mc_config_item (
 );
 
 CREATE TABLE mc_log (
-  id number(19, 0) NOT NULL,
+  id number(19,0) NOT NULL,
   context clob,
   event varchar2(255) DEFAULT NULL,
   event_date timestamp(6) DEFAULT NULL,
@@ -273,20 +280,18 @@ CREATE TABLE meetings (
   meeting_title varchar2(255) NOT NULL,
   meeting_url varchar2(255) DEFAULT NULL,
   meeting_provider_id varchar2(99) DEFAULT NULL,
-  PRIMARY KEY (meeting_id)
-,
+  PRIMARY KEY (meeting_id),
   CONSTRAINT FK_m_mp FOREIGN KEY (meeting_provider_id) REFERENCES meeting_providers (provider_id)
 );
 
 CREATE INDEX FK_m_mp ON meetings (meeting_provider_id);
 
 CREATE TABLE meeting_properties (
-  prop_id number(19, 0) NOT NULL,
+  prop_id number(19,0) NOT NULL,
   prop_name varchar2(255) NOT NULL,
   prop_value varchar2(255) DEFAULT NULL,
   prop_meeting_id varchar2(99) DEFAULT NULL,
-  PRIMARY KEY (prop_id)
-,
+  PRIMARY KEY (prop_id),
   CONSTRAINT FK_mp_m FOREIGN KEY (prop_meeting_id) REFERENCES meetings (meeting_id)
 );
 
@@ -296,12 +301,11 @@ CREATE SEQUENCE MEETING_PROPERTY_S START WITH 1 INCREMENT BY 1;
 CREATE INDEX FK_mp_m ON meeting_properties (prop_meeting_id);
 
 CREATE TABLE meeting_attendees (
-  attendee_id number(19, 0) NOT NULL,
+  attendee_id number(19,0) NOT NULL,
   attendee_object_id varchar2(255) DEFAULT NULL,
-  attendee_type number(1, 0) DEFAULT NULL,
+  attendee_type number(1,0) DEFAULT NULL,
   attendee_meeting_id varchar2(99) DEFAULT NULL,
-  PRIMARY KEY (attendee_id)
-,
+  PRIMARY KEY (attendee_id),
   CONSTRAINT FK_ma_m FOREIGN KEY (attendee_meeting_id) REFERENCES meetings (meeting_id)
 );
 
@@ -400,8 +404,8 @@ drop table PROFILE_FRIENDS_T;
 drop table PROFILE_KUDOS_T;
 drop table PROFILE_PRIVACY_T;
 drop table PROFILE_STATUS_T;
-drop table PROFILE_WALL_ITEMS_T;
 drop table PROFILE_WALL_ITEM_COMMENTS_T;
+drop table PROFILE_WALL_ITEMS_T;
 alter table PROFILE_SOCIAL_INFO_T drop column SKYPE_USERNAME;
 -- END SAK-50536
 

@@ -20,15 +20,8 @@ CREATE INDEX CONTENT_RESOURCE_FILE_PATH_DELETE_I ON CONTENT_RESOURCE_DELETE (FIL
 -- End SAK-48328
 
 -- S2U-12 --
-ALTER TABLE sam_itemfeedback_t ADD TEXT_CLOB CLOB;
-UPDATE sam_itemfeedback_t set TEXT_CLOB = TEXT;  -- convert varchar2 to CLOB
-ALTER TABLE sam_itemfeedback_t drop column TEXT;
-ALTER TABLE sam_itemfeedback_t RENAME COLUMN TEXT_CLOB TO TEXT;
-
-ALTER TABLE sam_publisheditemfeedback_t ADD TEXT_CLOB CLOB;
-UPDATE sam_publisheditemfeedback_t set TEXT_CLOB = TEXT;  -- convert varchar2 to CLOB
-ALTER TABLE sam_publisheditemfeedback_t drop column TEXT;
-ALTER TABLE sam_publisheditemfeedback_t RENAME COLUMN TEXT_CLOB TO TEXT;
+ALTER TABLE sam_itemfeedback_t MODIFY TEXT LONGTEXT;
+ALTER TABLE sam_publisheditemfeedback_t MODIFY TEXT LONGTEXT;
 -- End S2U-12 --
 
 -- S2U-42 --
@@ -390,8 +383,8 @@ drop table PROFILE_FRIENDS_T;
 drop table PROFILE_KUDOS_T;
 drop table PROFILE_PRIVACY_T;
 drop table PROFILE_STATUS_T;
-drop table PROFILE_WALL_ITEMS_T;
 drop table PROFILE_WALL_ITEM_COMMENTS_T;
+drop table PROFILE_WALL_ITEMS_T;
 alter table PROFILE_SOCIAL_INFO_T drop column SKYPE_USERNAME;
 -- END SAK-50536
 
