@@ -314,88 +314,119 @@ CREATE TABLE tmp_rbc_max_points
        max_points FLOAT NOT NULL
   );
 
--- THIS IS MYSQL - TO BE FIXED
-DELIMITER $$
-
-CREATE PROCEDURE calcRubricMaxPoints (
-       IN rubricId bigint(20),
-       IN rubricWeighted bit
+CREATE OR REPLACE PROCEDURE calcRubricMaxPoints (
+    rubricId IN NUMBER,
+    rubricWeighted IN NUMBER
 )
+IS
+    critId NUMBER;
+    critWeight NUMBER;
+    critMaxPoints NUMBER;
+    rubricMaxPoints NUMBER := 0;
+
+    -- declare cursor for criteria
+    CURSOR curCrit IS 
+        SELECT c.id AS critId, c.weight AS critWeight 
+        FROM rbc_rubric r 
+        JOIN rbc_criterion c ON r.id = c.rubric_id 
+        WHERE r.id = rubricId;
+
 BEGIN
-	DECLARE finished INTEGER DEFAULT 0;
-	DECLARE critId bigint;
-	DECLARE critWeight double;
-	DECLARE critMaxPoints double;
-	DECLARE rubricMaxPoints double default 0.00;
+    OPEN curCrit;
 
-	-- declare cursor for criteria
-	DECLARE curCrit CURSOR FOR select c.id, c.weight from rbc_rubric r, rbc_criterion c where r.id=c.rubric_id and r.id=rubricId;
+    LOOP
+        FETCH curCrit INTO critId, critWeight;
 
-        -- declare NOT FOUND handler
-        DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished = 1;
+        EXIT WHEN curCrit%NOTFOUND;
 
-	OPEN curCrit;
+        SELECT MAX(r.points) INTO critMaxPoints 
+        FROM rbc_rating r 
+        WHERE r.criterion_id = critId;
 
-	getCrit: LOOP
-		  FETCH curCrit INTO critId, critWeight;
-                  IF finished = 1 THEN 
-		  	    LEAVE getCrit;
-		  END IF;
+        -- skip criterion groups which will have null max points
+        IF critMaxPoints IS NOT NULL THEN
+            IF rubricWeighted = 0 THEN
+                rubricMaxPoints := rubricMaxPoints + critMaxPoints;
+            ELSE
+                rubricMaxPoints := rubricMaxPoints + (critMaxPoints * critWeight) / 100;
+            END IF;
+        END IF;
+    END LOOP;
 
-	          select MAX(r.points) INTO critMaxPoints from rbc_rating r, rbc_criterion c where c.id=r.criterion_id and c.id=critId;		  
+    CLOSE curCrit;
 
-		  -- skip criterion groups which will have null max points
-		  IF critMaxPoints is not null THEN
-		     IF rubricWeighted = b'0' THEN
-		     	SET rubricMaxPoints = rubricMaxPoints + critMaxPoints;
-		     ELSE
-     		     	SET rubricMaxPoints = rubricMaxPoints + (critMaxPoints * critWeight) / 100.00;
-		     END IF;
-		  END IF;
-	END LOOP getCrit;
-	CLOSE curCrit;
+    -- Merge to update or insert max points into the temporary table
+    MERGE INTO tmp_rbc_max_points t
+    USING (SELECT rubricId AS rubric_id, rubricMaxPoints AS max_points FROM DUAL) src
+    ON (t.rubric_id = src.rubric_id)
+    WHEN MATCHED THEN
+        UPDATE SET t.max_points = src.max_points
+    WHEN NOT MATCHED THEN
+        INSERT (rubric_id, max_points)
+        VALUES (src.rubric_id, src.max_points);
 
-	insert into tmp_rbc_max_points (rubric_id, max_points) values(rubricId, rubricMaxPoints); 
-END$$
+EXCEPTION
+    WHEN OTHERS THEN
+        IF curCrit%ISOPEN THEN
+            CLOSE curCrit;
+        END IF;
 
-CREATE PROCEDURE fillTmpRbcMaxPoints ()
+        RAISE_APPLICATION_ERROR(-20001, 'Error en calcRubricMaxPoints: ' || SQLERRM);
+END calcRubricMaxPoints;
+/
+
+
+CREATE OR REPLACE PROCEDURE fillTmpRbcMaxPoints
+IS
+    rbcId NUMBER;
+    rbcWeighted NUMBER;
+
+    -- declare cursor for rubrics
+    CURSOR curRubric IS
+        SELECT id, weighted
+        FROM rbc_rubric;
+
 BEGIN
-	DECLARE finished INTEGER DEFAULT 0;
-	DECLARE rbcId bigint;
-	DECLARE rbcWeighted bit;	
+    OPEN curRubric;
 
-	-- declare cursor for rubrics
-	DECLARE curRubric CURSOR FOR select id, weighted from rbc_rubric;
+    LOOP
+        FETCH curRubric INTO rbcId, rbcWeighted;
 
-        -- declare NOT FOUND handler
-        DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished = 1;
+        EXIT WHEN curRubric%NOTFOUND;
 
-	OPEN curRubric;
+        -- Call calcRubricMaxPoints procedure for each rubric
+        calcRubricMaxPoints(rbcId, rbcWeighted);
 
-	getRubric: LOOP
-		  FETCH curRubric INTO rbcId, rbcWeighted;
-                  IF finished = 1 THEN 
-		  	    LEAVE getRubric;
-		  END IF;
+    END LOOP;
 
-		  call calcRubricMaxPoints(rbcId, rbcWeighted);
-		  
-	END LOOP getRubric;
-	CLOSE curRubric;
+    CLOSE curRubric;
 
-END$$
+EXCEPTION
+    WHEN OTHERS THEN
+        IF curRubric%ISOPEN THEN
+            CLOSE curRubric;
+        END IF;
 
-DELIMITER ;
+        RAISE_APPLICATION_ERROR(-20002, 'Error en fillTmpRbcMaxPoints: ' || SQLERRM);
+END fillTmpRbcMaxPoints;
+/
 
-CALL fillTmpRbcMaxPoints();
+BEGIN
+    fillTmpRbcMaxPoints();
+END;
+/
 
-ALTER TABLE rbc_rubric ADD COLUMN max_points double null;
-update rbc_rubric r, tmp_rbc_max_points t set r.max_points = t.max_points where r.id = t.rubric_id;
+ALTER TABLE rbc_rubric ADD max_points FLOAT null;
+
+MERGE INTO rbc_rubric r
+USING tmp_rbc_max_points t
+ON (r.id = t.rubric_id)
+WHEN MATCHED THEN
+UPDATE SET r.max_points = t.max_points;
 
 DROP TABLE tmp_rbc_max_points;
 DROP PROCEDURE calcRubricMaxPoints;
 DROP PROCEDURE fillTmpRbcMaxPoints;
--- THIS IS MYSQL - TO BE FIXED
 -- END SAK-47876
 
 -- SAK-45041
