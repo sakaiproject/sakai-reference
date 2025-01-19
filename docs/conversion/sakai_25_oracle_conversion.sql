@@ -922,3 +922,16 @@ INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where RE
 INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Teaching Assistant'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.validate'));
 INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where REALM_ID = '!site.template.course'), (select ROLE_KEY from SAKAI_REALM_ROLE where ROLE_NAME = 'Teaching Assistant'), (select FUNCTION_KEY from SAKAI_REALM_FUNCTION where FUNCTION_NAME = 'scorm.view.results'));
 -- END SAK-50200
+
+-- SAK-44945
+CREATE TABLE lti_tool_site (
+    id INTEGER,
+    tool_id INTEGER,
+    SITE_ID VARCHAR2(99 CHAR),
+    notes VARCHAR2(1024 CHAR),
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
+);
+
+CREATE SEQUENCE lti_tool_site_id_sequence INCREMENT BY 1 START WITH 1;
+-- END SAK-44945
