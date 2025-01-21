@@ -925,12 +925,13 @@ INSERT INTO SAKAI_REALM_RL_FN VALUES((select REALM_KEY from SAKAI_REALM where RE
 
 -- SAK-44945
 CREATE TABLE lti_tool_site (
-    id INTEGER,
-    tool_id INTEGER,
+    id NUMBER(11),
+    tool_id NUMBER(11),
     SITE_ID VARCHAR2(99 CHAR),
     notes VARCHAR2(1024 CHAR),
     created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL
+    updated_at TIMESTAMP NOT NULL,
+    PRIMARY KEY (id)
 );
 
 CREATE SEQUENCE lti_tool_site_id_sequence INCREMENT BY 1 START WITH 1;
