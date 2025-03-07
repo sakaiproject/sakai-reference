@@ -5,5 +5,18 @@ ALTER TABLE CONV_POSTS ADD (
   NUMBER_OF_THREAD_UPVOTES NUMBER(10) DEFAULT 0,
   REACTION_COUNT NUMBER(10) DEFAULT 0
 );
-DELETE FROM CONV_POST_REACTIONS WHERE reaction >= 4;
+
+ -- Update LOVE_IT (old value 2, new value 1)
+ UPDATE CONV_POST_REACTIONS SET reaction = 1 WHERE reaction = 2;
+
+ -- Update GOOD_IDEA (old value 3, new value 2)
+ UPDATE CONV_POST_REACTIONS SET reaction = 2 WHERE reaction = 3;
+
+ -- Update KEY (old value 4, new value 3)
+ UPDATE CONV_POST_REACTIONS SET reaction = 3 WHERE reaction = 4;
+
+ -- Change GOOD_QUESTION and GOOD_ANSWER to GOOD_IDEA (new value 2)
+ UPDATE CONV_POST_REACTIONS SET reaction = 2 WHERE reaction IN (0, 1);
+
+DELETE FROM CONV_POST_REACTIONS WHERE reaction > 4;
 -- End SAK-50526
