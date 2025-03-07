@@ -6,17 +6,28 @@ ALTER TABLE CONV_POSTS ADD (
   REACTION_COUNT NUMBER(10) DEFAULT 0
 );
 
- -- Update LOVE_IT (old value 2, new value 1)
- UPDATE CONV_POST_REACTIONS SET reaction = 1 WHERE reaction = 2;
+-- Step 1: Drop the unique constraint
+ALTER TABLE CONV_POST_REACTIONS DROP CONSTRAINT UniquePostReactions;
 
- -- Update GOOD_IDEA (old value 3, new value 2)
- UPDATE CONV_POST_REACTIONS SET reaction = 2 WHERE reaction = 3;
+-- Step 2: Apply the CASE update
+UPDATE CONV_POST_REACTIONS
+SET REACTION = CASE REACTION
+    WHEN 0 THEN 2  -- GOOD_QUESTION → GOOD_IDEA
+    WHEN 1 THEN 2  -- GOOD_ANSWER → GOOD_IDEA
+    WHEN 2 THEN 1  -- LOVE_IT → 1
+    WHEN 3 THEN 2  -- GOOD_IDEA → 2
+    WHEN 4 THEN 3  -- KEY → 3
+    ELSE REACTION
+END;
 
- -- Update KEY (old value 4, new value 3)
- UPDATE CONV_POST_REACTIONS SET reaction = 3 WHERE reaction = 4;
+-- Step 3 (Optional): Remove duplicates if they exist after the update
+DELETE FROM CONV_POST_REACTIONS
+WHERE ROWID NOT IN (
+    SELECT MIN(ROWID)
+    FROM CONV_POST_REACTIONS
+    GROUP BY POST_ID, USER_ID, REACTION
+);
 
- -- Change GOOD_QUESTION and GOOD_ANSWER to GOOD_IDEA (new value 2)
- UPDATE CONV_POST_REACTIONS SET reaction = 2 WHERE reaction IN (0, 1);
-
-DELETE FROM CONV_POST_REACTIONS WHERE reaction > 4;
+-- Step 4: Re-add the unique constraint
+ALTER TABLE CONV_POST_REACTIONS ADD CONSTRAINT UniquePostReactions UNIQUE (POST_ID, USER_ID, REACTION);
 -- End SAK-50526
