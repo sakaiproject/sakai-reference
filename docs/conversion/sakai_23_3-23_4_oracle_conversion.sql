@@ -20,12 +20,14 @@ SET REACTION = CASE REACTION
     ELSE REACTION
 END;
 
--- Step 3 (Optional): Remove duplicates if they exist after the update
-DELETE FROM CONV_POST_REACTIONS
-WHERE ROWID NOT IN (
-    SELECT MIN(ROWID)
-    FROM CONV_POST_REACTIONS
-    GROUP BY POST_ID, USER_ID, REACTION
+-- Step 3: Remove duplicates using Oracle's syntax
+DELETE FROM CONV_POST_REACTIONS a 
+WHERE a.ROWID > (
+    SELECT MIN(b.ROWID)
+    FROM CONV_POST_REACTIONS b
+    WHERE a.POST_ID = b.POST_ID 
+    AND a.USER_ID = b.USER_ID 
+    AND a.REACTION = b.REACTION
 );
 
 -- Step 4: Re-add the unique constraint
@@ -45,12 +47,14 @@ SET REACTION = CASE REACTION
     ELSE REACTION
 END;
 
--- Step 3 (Optional): Remove duplicates if they exist after the update
-DELETE FROM CONV_TOPIC_REACTIONS
-WHERE ROWID NOT IN (
-    SELECT MIN(ROWID)
-    FROM CONV_TOPIC_REACTIONS
-    GROUP BY TOPIC_ID, USER_ID, REACTION
+-- Step 3: Remove duplicates using Oracle's syntax
+DELETE FROM CONV_TOPIC_REACTIONS a 
+WHERE a.ROWID > (
+    SELECT MIN(b.ROWID)
+    FROM CONV_TOPIC_REACTIONS b
+    WHERE a.TOPIC_ID = b.TOPIC_ID 
+    AND a.USER_ID = b.USER_ID 
+    AND a.REACTION = b.REACTION
 );
 
 -- Step 4: Re-add the unique constraint
