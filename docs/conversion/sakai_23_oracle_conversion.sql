@@ -477,7 +477,7 @@ ALTER TABLE SAM_GRADINGSUMMARY_T MODIFY AGENTID VARCHAR2(99);
 ALTER TABLE SAM_ITEMGRADING_T MODIFY AGENTID VARCHAR2(99);
 ALTER TABLE SAM_STUDENTGRADINGSUMMARY_T MODIFY AGENTID VARCHAR2(99);
 ALTER TABLE SAM_ASSESSMENTGRADING_T MODIFY GRADEDBY VARCHAR2(99);
-ALTER TABLE SAM_ITEMGRADING_T MODIFY GRADEDBY VARCHAR2(99);o
+ALTER TABLE SAM_ITEMGRADING_T MODIFY GRADEDBY VARCHAR2(99);
 
 CREATE INDEX SAM_AG_AGENTID_I ON SAM_GRADINGSUMMARY_T(AGENTID);
 CREATE INDEX SAM_ASSGRAD_AID_PUBASSEID_T ON SAM_ASSESSMENTGRADING_T(AGENTID, PUBLISHEDASSESSMENTID);
@@ -703,7 +703,7 @@ CREATE GLOBAL TEMPORARY TABLE temp_uuids ( extracted_uuid VARCHAR2(36)) ON COMMI
 INSERT INTO temp_uuids (extracted_uuid)
   SELECT REGEXP_SUBSTR(RESOURCE_ID, '[^/]+', 1, 3) AS extracted_uuid FROM CONTENT_RESOURCE WHERE RESOURCE_ID LIKE '/group/%/site_icon_image.png';
 
-INSERT INTO SAKAI_SITE_PROPERTY (SITE_ID, PROPERTY_NAME, PROPERTY_VALUE) SELECT extracted_uuid, 'custom_image_url', '/access/content/group/' || extracted_uuid || 'site_icon_image.png' FROM temp_uuids;
+INSERT INTO SAKAI_SITE_PROPERTY (SITE_ID, NAME, VALUE) SELECT extracted_uuid, 'custom_image_url', '/access/content/group/' || extracted_uuid || 'site_icon_image.png' FROM temp_uuids;
 
 DROP TABLE temp_uuids;
 -- END SAK-46635
@@ -742,9 +742,10 @@ CREATE INDEX CONTENT_RESOURCE_FILE_PATH_DELETE_I ON CONTENT_RESOURCE_DELETE (FIL
 RENAME COLUMN rbc_tool_item_rbc_assoc.ownerId TO siteId;
 DROP INDEX rbc_tool_item_owner;
 CREATE INDEX rbc_tool_item_active ON rbc_tool_item_rbc_assoc(toolId, itemId, active);
+-- NOTE : run these only if you didn't apply the changes when upgrading from 22.0 to 22.1
 ALTER TABLE rbc_criterion ADD order_index NUMBER(1,0) NULL;
 ALTER TABLE rbc_rating ADD order_index NUMBER(1,0) NULL;
-UPDATE rbc_rating r, rbc_criterion_ratings cr SET r.criterion_id = cr.rbc_criterion_id, r.order_index = cr.order_index WHERE cr.ratings_id = r.id;
-UPDATE rbc_criterion c, rbc_rubric_criterions rc SET c.rubric_id = rc.rbc_rubric_id, c.order_index = rc.order_index WHERE rc.criterions_id = c.id;
+UPDATE rbc_rating r SET (criterion_id,order_index) = (SELECT rc.rbc_rubric_id, rc.order_index FROM rbc_criterion_ratings cr WHERE cr.ratings_id = r.id);
+UPDATE rbc_criterion c SET (c.rubric_id,c.order_index) = (SELECT rc.rbc_rubric_id, rc.order_index FROM rbc_rubric_criterions rc WHERE rc.criterions_id = c.id);
 -- END SAK-46178
 -- END NOT IN MY SQL SCRIPT
