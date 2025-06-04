@@ -56,7 +56,8 @@ ALTER TABLE MFR_TOPIC_T
 
 -- S2U-34 --
 -- IMPORTANT: This index must be deleted and may have a different name, maybe UK_dn0jue890jn9p7vs6tvnsf2gf or similar
-ALTER TABLE rbc_evaluation DROP INDEX IF EXISTS UKdn0jue890jn9p7vs6tvnsf2gf;
+-- Note: IF EXISTS syntax may not work in all MySQL versions, handle errors appropriately
+DROP INDEX UKdn0jue890jn9p7vs6tvnsf2gf ON rbc_evaluation;
 ALTER TABLE rbc_evaluation
     ADD CONSTRAINT UKqsk75a24pi108jpybtt16hshv UNIQUE (association_id, evaluated_item_id, evaluated_item_owner_id);
 
@@ -363,7 +364,7 @@ CREATE TABLE mc_access_token
     CONSTRAINT PK_MC_ACCESS_TOKEN PRIMARY KEY (sakaiUserId)
 );
 
-DROP TABLE ONEDRIVE_USER;
+DROP TABLE IF EXISTS ONEDRIVE_USER;
 -- END S2U-49 --
 
 -- S2U-16 --
@@ -936,7 +937,7 @@ ALTER TABLE CONV_TOPICS ADD GRADING_ITEM_ID BIGINT DEFAULT NULL;
 
 -- SAK-51518
 ALTER TABLE CONV_TOPIC_TAGS ADD CONSTRAINT UK_TOPIC_TAG UNIQUE (TOPIC_ID, TAG);
-DROP INDEX IF EXISTS FKrmek6b1bqs2jghppp27ph2dn9 ON CONV_TOPIC_TAGS;
+DROP INDEX FKrmek6b1bqs2jghppp27ph2dn9 ON CONV_TOPIC_TAGS;
 -- END SAK-51518
 
 -- S2U-39
