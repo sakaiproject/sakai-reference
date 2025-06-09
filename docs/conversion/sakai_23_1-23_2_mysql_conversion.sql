@@ -42,3 +42,12 @@ ALTER TABLE CONV_TOPIC_STATUS MODIFY TOPIC_ID VARCHAR(36) NULL;
 ALTER TABLE CONV_TOPIC_STATUS ALTER TOPIC_ID SET DEFAULT null;
 -- SAK-49263 END
 
+-- START SAK-51583
+UPDATE sakai_preferences
+SET XML = REPLACE(XML,'</preferences>','<prefs key="sakai:portal:tutorialFlag"><properties><property enc="BASE64" name="tutorialFlag" value="MQ=="/></properties></prefs></preferences>')
+WHERE XML LIKE '%<property enc="BASE64" name="sakaiTutorialFlag" value="MQ=="/>%';
+
+UPDATE sakai_preferences
+SET XML = REPLACE(XML,'<property enc="BASE64" name="sakaiTutorialFlag" value="MQ=="/>','')
+WHERE XML LIKE '%<property enc="BASE64" name="sakaiTutorialFlag" value="MQ=="/>%';
+-- END SAK-51583

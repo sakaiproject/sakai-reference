@@ -974,3 +974,13 @@ ALTER TABLE rbc_rubric ALTER ownerId DROP DEFAULT;
 ALTER TABLE rbc_rubric MODIFY title VARCHAR(255) NOT NULL;
 ALTER TABLE rbc_rubric ALTER title DROP DEFAULT;
 -- END SAK-50724
+
+-- START SAK-51583
+UPDATE sakai_preferences
+SET XML = REPLACE(XML,'</preferences>','<prefs key="sakai:portal:tutorialFlag"><properties><property enc="BASE64" name="tutorialFlag" value="MQ=="/></properties></prefs></preferences>')
+WHERE XML LIKE '%<property enc="BASE64" name="sakaiTutorialFlag" value="MQ=="/>%';
+
+UPDATE sakai_preferences
+SET XML = REPLACE(XML,'<property enc="BASE64" name="sakaiTutorialFlag" value="MQ=="/>','')
+WHERE XML LIKE '%<property enc="BASE64" name="sakaiTutorialFlag" value="MQ=="/>%';
+-- END SAK-51583
