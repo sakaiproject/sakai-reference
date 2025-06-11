@@ -1,3 +1,5 @@
+-- This script is to be run after running the sakai_23_3-23_4 script
+
 -- SAK-48106
 UPDATE user_audits_log audits SET audits.user_id = (SELECT idmap.user_id FROM SAKAI_USER_ID_MAP idmap WHERE idmap.eid = audits.user_id) WHERE EXISTS (SELECT 1 FROM SAKAI_USER_ID_MAP idmap WHERE idmap.eid = audits.user_id);
 UPDATE user_audits_log audits SET audits.action_user_id = (SELECT idmap.user_id FROM SAKAI_USER_ID_MAP idmap WHERE idmap.eid = audits.action_user_id) WHERE EXISTS (SELECT 1 FROM SAKAI_USER_ID_MAP idmap WHERE idmap.eid = audits.action_user_id); 

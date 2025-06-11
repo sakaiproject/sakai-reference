@@ -1,3 +1,5 @@
+-- This script is to be run after running the sakai_23_3-23_4 script
+
 -- clear unchanged bundle properties
 DELETE FROM SAKAI_MESSAGE_BUNDLE where PROP_VALUE is NULL;
 
