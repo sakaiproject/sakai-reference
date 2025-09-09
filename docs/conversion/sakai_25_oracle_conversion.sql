@@ -919,3 +919,13 @@ CREATE SEQUENCE CONV_USER_STATISTICS_S MINVALUE 1 MAXVALUE 999999999999999999999
 --GRADEBOOK
 CREATE SEQUENCE GB_SPREADSHEET_S MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20;
 -- END SAK-51342 --
+
+-- START SAK-51583
+UPDATE sakai_preferences
+SET XML = REPLACE(XML,'</preferences>','<prefs key="sakai:portal:tutorialFlag"><properties><property enc="BASE64" name="tutorialFlag" value="MQ=="/></properties></prefs></preferences>')
+WHERE XML LIKE '%<property enc="BASE64" name="sakaiTutorialFlag" value="MQ=="/>%';
+
+UPDATE sakai_preferences
+SET XML = REPLACE(XML,'<property enc="BASE64" name="sakaiTutorialFlag" value="MQ=="/>','')
+WHERE XML LIKE '%<property enc="BASE64" name="sakaiTutorialFlag" value="MQ=="/>%';
+-- END SAK-51583
