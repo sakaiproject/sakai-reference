@@ -28,4 +28,8 @@ ALTER TABLE lti_tools DROP COLUMN lti11_launch_type;
 ALTER TABLE lti_content DROP COLUMN lti13_settings;
 ALTER TABLE lti_tools DROP COLUMN lti13_settings;
 ALTER TABLE lti_content DROP COLUMN lti13;
--- SAK-51998
+-- END SAK-51998
+
+-- SAK-51573
+DROP TABLE PROFILE_PREFERENCES_T;
+-- END SAK-51573
