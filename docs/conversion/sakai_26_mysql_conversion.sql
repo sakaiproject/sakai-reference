@@ -22,3 +22,6 @@ ALTER TABLE PROFILE_IMAGES_T DROP INDEX PROFILE_IMAGES_USER_UUID_I;
 
 -- END SAK-52193
 
+-- SAK-51938
+alter table lesson_builder_pages add column hiddenFromNavigation bit(1) default 0;
+-- END SAK-51938
