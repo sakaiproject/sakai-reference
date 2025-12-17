@@ -963,7 +963,7 @@ WHERE co.id IN (
                    ROW_NUMBER() OVER (
                        PARTITION BY association_id, evaluated_item_id, evaluated_item_owner_id
                        ORDER BY CASE WHEN status = 2 THEN 2 WHEN status = 1 THEN 1 ELSE 0 END DESC,
-                                NVL(modified, created),
+                                NVL(NVL(modified, created), TO_DATE('1970-01-01','YYYY-MM-DD')) DESC,
                                 id DESC
                    ) rn
             FROM rbc_evaluation
@@ -977,11 +977,11 @@ WHERE eco.rbc_evaluation_id IN (
     SELECT id FROM (
         SELECT id,
                ROW_NUMBER() OVER (
-                   PARTITION BY association_id, evaluated_item_id, evaluated_item_owner_id
-                   ORDER BY CASE WHEN status = 2 THEN 2 WHEN status = 1 THEN 1 ELSE 0 END DESC,
-                            NVL(modified, created),
+               PARTITION BY association_id, evaluated_item_id, evaluated_item_owner_id
+               ORDER BY CASE WHEN status = 2 THEN 2 WHEN status = 1 THEN 1 ELSE 0 END DESC,
+                            NVL(NVL(modified, created), TO_DATE('1970-01-01','YYYY-MM-DD')) DESC,
                             id DESC
-               ) rn
+           ) rn
         FROM rbc_evaluation
     ) dup
     WHERE dup.rn > 1
@@ -992,11 +992,11 @@ WHERE e.id IN (
     SELECT id FROM (
         SELECT id,
                ROW_NUMBER() OVER (
-                   PARTITION BY association_id, evaluated_item_id, evaluated_item_owner_id
-                   ORDER BY CASE WHEN status = 2 THEN 2 WHEN status = 1 THEN 1 ELSE 0 END DESC,
-                            NVL(modified, created),
+               PARTITION BY association_id, evaluated_item_id, evaluated_item_owner_id
+               ORDER BY CASE WHEN status = 2 THEN 2 WHEN status = 1 THEN 1 ELSE 0 END DESC,
+                            NVL(NVL(modified, created), TO_DATE('1970-01-01','YYYY-MM-DD')) DESC,
                             id DESC
-               ) rn
+           ) rn
         FROM rbc_evaluation
     ) dup
     WHERE dup.rn > 1
