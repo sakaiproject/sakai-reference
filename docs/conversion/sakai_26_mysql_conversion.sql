@@ -25,3 +25,7 @@ ALTER TABLE PROFILE_IMAGES_T DROP INDEX PROFILE_IMAGES_USER_UUID_I;
 -- START SAK-49440
 ALTER TABLE mfr_permission_level_t CHANGE COLUMN MARK_AS_READ MARK_AS_NOT_READ bit(1) NOT NULL;
 -- END SAK-49440
+
+-- SAK-51938
+alter table lesson_builder_pages add column hiddenFromNavigation bit(1) default 0;
+-- END SAK-51938
