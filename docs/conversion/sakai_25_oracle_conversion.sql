@@ -929,3 +929,7 @@ UPDATE sakai_preferences
 SET XML = REPLACE(XML,'<property enc="BASE64" name="sakaiTutorialFlag" value="MQ=="/>','')
 WHERE XML LIKE '%<property enc="BASE64" name="sakaiTutorialFlag" value="MQ=="/>%';
 -- END SAK-51583
+
+-- START SAK-49440
+ALTER TABLE mfr_permission_level_t RENAME COLUMN MARK_AS_READ TO MARK_AS_NOT_READ;
+-- END SAK-49440
