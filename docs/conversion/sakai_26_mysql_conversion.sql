@@ -46,3 +46,67 @@ CREATE TABLE mc_team_archive (
 
 ALTER TABLE mc_team_archive ADD CONSTRAINT UKmc9f2k3lrxwp7v8qntjd5hs0ya UNIQUE (site_id, team_id);
 -- END SAK-52642
+
+-- SAK-52039 Polls: migrate persistence to Spring Data JPA (MySQL)
+
+-- The Poll primary key changes from a numeric, AUTO_INCREMENT POLL_ID to the
+-- 36-char UUID that was previously stored in POLL_UUID. The Option/Vote
+-- foreign keys are re-pointed to the new string key, POLL_VOTE.VOTE_POLL_ID
+-- is dropped (votes now reach a poll through their option), VOTE_OPTION
+-- becomes NOT NULL, and the obsolete OPTION_UUID/POLL_UUID columns are
+-- removed. Several user/site/ip columns are narrowed to VARCHAR(99) to match
+-- the JPA entities.
+
+-- Run once when upgrading an existing instance. The whole migration is
+-- guarded on the presence of POLL_POLL.POLL_UUID, so it is a no-op on schemas
+-- that Hibernate already created in the new shape and is safe to re-run.
+
+DROP PROCEDURE IF EXISTS polls_migrate_jpa;
+DELIMITER //
+CREATE PROCEDURE polls_migrate_jpa()
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME   = 'POLL_POLL'
+          AND COLUMN_NAME  = 'POLL_UUID'
+    ) THEN
+
+        -- --- POLL_OPTION: re-point OPTION_POLL_ID from numeric poll id to poll UUID ---
+        ALTER TABLE POLL_OPTION ADD COLUMN OPTION_POLL_ID_TMP VARCHAR(36);
+        UPDATE POLL_OPTION o
+            JOIN POLL_POLL p ON o.OPTION_POLL_ID = p.POLL_ID
+            SET o.OPTION_POLL_ID_TMP = p.POLL_UUID;
+        -- Drop options orphaned from any poll; they can no longer be mapped.
+        DELETE FROM POLL_OPTION WHERE OPTION_POLL_ID_TMP IS NULL;
+        ALTER TABLE POLL_OPTION DROP COLUMN OPTION_POLL_ID;
+        ALTER TABLE POLL_OPTION CHANGE COLUMN OPTION_POLL_ID_TMP OPTION_POLL_ID VARCHAR(36) NOT NULL;
+        ALTER TABLE POLL_OPTION DROP COLUMN OPTION_UUID;
+        CREATE INDEX POLLTOOL_OPTION_POLLID_IDX ON POLL_OPTION (OPTION_POLL_ID);
+
+        -- --- POLL_VOTE: votes reach a poll through their option now ---
+        -- VOTE_OPTION becomes NOT NULL, so drop votes that never recorded one.
+        DELETE FROM POLL_VOTE WHERE VOTE_OPTION IS NULL;
+        ALTER TABLE POLL_VOTE DROP COLUMN VOTE_POLL_ID;
+        ALTER TABLE POLL_VOTE MODIFY COLUMN VOTE_OPTION BIGINT NOT NULL;
+        ALTER TABLE POLL_VOTE MODIFY COLUMN USER_ID VARCHAR(99) NOT NULL;
+        ALTER TABLE POLL_VOTE MODIFY COLUMN VOTE_IP VARCHAR(99) NOT NULL;
+        ALTER TABLE POLL_VOTE MODIFY COLUMN VOTE_SUBMISSION_ID VARCHAR(99) NOT NULL;
+        CREATE INDEX POLLTOOL_VOTE_OPTION_IDX ON POLL_VOTE (VOTE_OPTION);
+
+        -- --- POLL_POLL: promote POLL_UUID to the primary key ---
+        ALTER TABLE POLL_POLL MODIFY COLUMN POLL_ID BIGINT NOT NULL;  -- drop AUTO_INCREMENT
+        ALTER TABLE POLL_POLL DROP PRIMARY KEY;
+        ALTER TABLE POLL_POLL DROP COLUMN POLL_ID;
+        ALTER TABLE POLL_POLL CHANGE COLUMN POLL_UUID POLL_ID VARCHAR(36) NOT NULL;
+        ALTER TABLE POLL_POLL ADD PRIMARY KEY (POLL_ID);
+        ALTER TABLE POLL_POLL MODIFY COLUMN POLL_OWNER VARCHAR(99) NOT NULL;
+        ALTER TABLE POLL_POLL MODIFY COLUMN POLL_SITE_ID VARCHAR(99) NOT NULL;
+        ALTER TABLE POLL_POLL MODIFY COLUMN POLL_DISPLAY_RESULT VARCHAR(99) NOT NULL;
+
+    END IF;
+END //
+DELIMITER ;
+CALL polls_migrate_jpa();
+DROP PROCEDURE IF EXISTS polls_migrate_jpa;
+-- END SAK-52039

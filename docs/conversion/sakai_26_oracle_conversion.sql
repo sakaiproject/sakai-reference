@@ -56,3 +56,73 @@ CREATE TABLE mc_team_archive (
   CONSTRAINT UKmc_ta UNIQUE (site_id, team_id)
 );
 -- END SAK-52642
+
+-- SAK-52039 Polls: migrate persistence to Spring Data JPA (Oracle)
+
+-- The Poll primary key changes from a numeric POLL_ID (fed by the
+-- POLL_POLL_ID_SEQ sequence) to the 36-char UUID that was previously stored
+-- in POLL_UUID. The Option/Vote foreign keys are re-pointed to the new string
+-- key, POLL_VOTE.VOTE_POLL_ID is dropped (votes now reach a poll through their
+-- option), VOTE_OPTION becomes NOT NULL, and the obsolete OPTION_UUID/POLL_UUID
+-- columns are removed. Several user/site/ip columns are narrowed to
+-- VARCHAR2(99) to match the JPA entities.
+
+-- Run once when upgrading an existing instance. The whole migration is guarded
+-- on the presence of POLL_POLL.POLL_UUID, so it is a no-op on schemas that
+-- Hibernate already created in the new shape and is safe to re-run.
+-- =====================================================================
+
+DECLARE
+    v_count NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO v_count
+    FROM   USER_TAB_COLUMNS
+    WHERE  TABLE_NAME  = 'POLL_POLL'
+      AND  COLUMN_NAME = 'POLL_UUID';
+
+    IF v_count > 0 THEN
+
+        -- --- POLL_OPTION: re-point OPTION_POLL_ID from numeric poll id to poll UUID ---
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_OPTION ADD OPTION_POLL_ID_TMP VARCHAR2(36)';
+        EXECUTE IMMEDIATE 'UPDATE POLL_OPTION o SET o.OPTION_POLL_ID_TMP = ' ||
+                          '(SELECT p.POLL_UUID FROM POLL_POLL p WHERE p.POLL_ID = o.OPTION_POLL_ID)';
+        -- Drop options orphaned from any poll; they can no longer be mapped.
+        EXECUTE IMMEDIATE 'DELETE FROM POLL_OPTION WHERE OPTION_POLL_ID_TMP IS NULL';
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_OPTION DROP COLUMN OPTION_POLL_ID';
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_OPTION RENAME COLUMN OPTION_POLL_ID_TMP TO OPTION_POLL_ID';
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_OPTION MODIFY (OPTION_POLL_ID VARCHAR2(36) NOT NULL)';
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_OPTION DROP COLUMN OPTION_UUID';
+        EXECUTE IMMEDIATE 'CREATE INDEX POLLTOOL_OPTION_POLLID_IDX ON POLL_OPTION (OPTION_POLL_ID)';
+
+        -- --- POLL_VOTE: votes reach a poll through their option now ---
+        -- VOTE_OPTION becomes NOT NULL, so drop votes that never recorded one.
+        EXECUTE IMMEDIATE 'DELETE FROM POLL_VOTE WHERE VOTE_OPTION IS NULL';
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_VOTE DROP COLUMN VOTE_POLL_ID';
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_VOTE MODIFY (VOTE_OPTION NUMBER(19,0) NOT NULL)';
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_VOTE MODIFY (USER_ID VARCHAR2(99) NOT NULL)';
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_VOTE MODIFY (VOTE_IP VARCHAR2(99) NOT NULL)';
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_VOTE MODIFY (VOTE_SUBMISSION_ID VARCHAR2(99) NOT NULL)';
+        EXECUTE IMMEDIATE 'CREATE INDEX POLLTOOL_VOTE_OPTION_IDX ON POLL_VOTE (VOTE_OPTION)';
+
+        -- --- POLL_POLL: promote POLL_UUID to the primary key ---
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_POLL DROP PRIMARY KEY';
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_POLL DROP COLUMN POLL_ID';
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_POLL RENAME COLUMN POLL_UUID TO POLL_ID';
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_POLL MODIFY (POLL_ID VARCHAR2(36) NOT NULL)';
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_POLL ADD CONSTRAINT POLL_POLL_PK PRIMARY KEY (POLL_ID)';
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_POLL MODIFY (POLL_OWNER VARCHAR2(99) NOT NULL)';
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_POLL MODIFY (POLL_SITE_ID VARCHAR2(99) NOT NULL)';
+        EXECUTE IMMEDIATE 'ALTER TABLE POLL_POLL MODIFY (POLL_DISPLAY_RESULT VARCHAR2(99) NOT NULL)';
+
+    END IF;
+END;
+/
+
+-- The poll primary key is no longer sequence-generated; drop the obsolete sequence.
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE POLL_POLL_ID_SEQ';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+-- END SAK-52039
+
