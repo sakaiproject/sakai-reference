@@ -72,6 +72,25 @@ BEGIN
           AND COLUMN_NAME  = 'POLL_UUID'
     ) THEN
 
+        -- Self-heal malformed/duplicate POLL_UUID values before this
+        -- procedure promotes the column to the primary key. Real-world
+        -- instances have been found with POLL_UUID = NULL, the literal
+        -- string 'null' (residue of a historic bulk import), or values
+        -- shared by more than one poll. Left unrepaired, the destructive
+        -- ALTER/DELETE statements below are not transactional, so a bad
+        -- value causes the final "CHANGE COLUMN ... NOT NULL" to fail and
+        -- leaves the schema half-migrated (POLL_ID already dropped, new PK
+        -- never added, options silently deleted as orphaned).
+        UPDATE POLL_POLL SET POLL_UUID = UUID()
+        WHERE POLL_UUID IS NULL
+           OR LENGTH(POLL_UUID) <> 36
+           OR POLL_UUID IN (
+                SELECT dup.POLL_UUID FROM (
+                    SELECT POLL_UUID FROM POLL_POLL
+                    GROUP BY POLL_UUID HAVING COUNT(*) > 1
+                ) dup
+           );
+
         -- --- POLL_OPTION: re-point OPTION_POLL_ID from numeric poll id to poll UUID ---
         ALTER TABLE POLL_OPTION ADD COLUMN OPTION_POLL_ID_TMP VARCHAR(36);
         UPDATE POLL_OPTION o
