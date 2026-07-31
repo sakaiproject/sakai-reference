@@ -103,6 +103,14 @@ BEGIN
         ALTER TABLE POLL_OPTION DROP COLUMN OPTION_UUID;
         CREATE INDEX POLLTOOL_OPTION_POLLID_IDX ON POLL_OPTION (OPTION_POLL_ID);
 
+        -- The JPA entity manages OPTION_ORDER via @OrderColumn on a bidirectional
+        -- (mappedBy) Poll.options collection. Hibernate inserts a new Option row
+        -- before it knows the collection's final order, then issues a follow-up
+        -- UPDATE to set OPTION_ORDER once the index is known. Without a default,
+        -- that first INSERT fails outright ("Field 'OPTION_ORDER' doesn't have a
+        -- default value") as soon as a poll option is added through the new tool.
+        ALTER TABLE POLL_OPTION MODIFY COLUMN OPTION_ORDER INT NOT NULL DEFAULT 0;
+
         -- --- POLL_VOTE: votes reach a poll through their option now ---
         -- VOTE_OPTION becomes NOT NULL, so drop votes that never recorded one.
         DELETE FROM POLL_VOTE WHERE VOTE_OPTION IS NULL;
