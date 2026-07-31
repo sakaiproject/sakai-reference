@@ -82,6 +82,30 @@ BEGIN
 
     IF v_count > 0 THEN
 
+        -- Self-heal malformed/duplicate POLL_UUID values before this
+        -- block promotes the column to the primary key. Real-world
+        -- instances have been found with POLL_UUID = NULL, the literal
+        -- string 'null' (residue of a historic bulk import), or values
+        -- shared by more than one poll. Left unrepaired, the destructive
+        -- ALTER/DELETE statements below are not transactional, so a bad
+        -- value causes a later MODIFY/ADD PRIMARY KEY to fail and leaves
+        -- the schema half-migrated (POLL_ID already dropped, new PK never
+        -- added, options silently deleted as orphaned).
+        -- SYS_GUID() is formatted to a 36-char hyphenated UUID to match
+        -- the Java/MySQL UUID() shape expected by the rest of this migration.
+        UPDATE POLL_POLL
+        SET POLL_UUID = LOWER(REGEXP_REPLACE(RAWTOHEX(SYS_GUID()),
+                '([A-F0-9]{8})([A-F0-9]{4})([A-F0-9]{4})([A-F0-9]{4})([A-F0-9]{12})',
+                '\1-\2-\3-\4-\5'))
+        WHERE POLL_UUID IS NULL
+           OR LENGTH(POLL_UUID) <> 36
+           OR POLL_UUID IN (
+                SELECT dup.POLL_UUID FROM (
+                    SELECT POLL_UUID FROM POLL_POLL
+                    GROUP BY POLL_UUID HAVING COUNT(*) > 1
+                ) dup
+           );
+
         -- --- POLL_OPTION: re-point OPTION_POLL_ID from numeric poll id to poll UUID ---
         EXECUTE IMMEDIATE 'ALTER TABLE POLL_OPTION ADD OPTION_POLL_ID_TMP VARCHAR2(36)';
         EXECUTE IMMEDIATE 'UPDATE POLL_OPTION o SET o.OPTION_POLL_ID_TMP = ' ||
