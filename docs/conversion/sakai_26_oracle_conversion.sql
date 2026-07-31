@@ -93,18 +93,20 @@ BEGIN
         -- added, options silently deleted as orphaned).
         -- SYS_GUID() is formatted to a 36-char hyphenated UUID to match
         -- the Java/MySQL UUID() shape expected by the rest of this migration.
-        UPDATE POLL_POLL
-        SET POLL_UUID = LOWER(REGEXP_REPLACE(RAWTOHEX(SYS_GUID()),
-                '([A-F0-9]{8})([A-F0-9]{4})([A-F0-9]{4})([A-F0-9]{4})([A-F0-9]{12})',
-                '\1-\2-\3-\4-\5'))
-        WHERE POLL_UUID IS NULL
-           OR LENGTH(POLL_UUID) <> 36
-           OR POLL_UUID IN (
-                SELECT dup.POLL_UUID FROM (
-                    SELECT POLL_UUID FROM POLL_POLL
-                    GROUP BY POLL_UUID HAVING COUNT(*) > 1
-                ) dup
-           );
+        EXECUTE IMMEDIATE q'[
+            UPDATE POLL_POLL
+            SET POLL_UUID = LOWER(REGEXP_REPLACE(RAWTOHEX(SYS_GUID()),
+                    '([A-F0-9]{8})([A-F0-9]{4})([A-F0-9]{4})([A-F0-9]{4})([A-F0-9]{12})',
+                    '\1-\2-\3-\4-\5'))
+            WHERE POLL_UUID IS NULL
+               OR LENGTH(POLL_UUID) <> 36
+               OR POLL_UUID IN (
+                    SELECT dup.POLL_UUID FROM (
+                        SELECT POLL_UUID FROM POLL_POLL
+                        GROUP BY POLL_UUID HAVING COUNT(*) > 1
+                    ) dup
+               )
+        ]';
 
         -- --- POLL_OPTION: re-point OPTION_POLL_ID from numeric poll id to poll UUID ---
         EXECUTE IMMEDIATE 'ALTER TABLE POLL_OPTION ADD OPTION_POLL_ID_TMP VARCHAR2(36)';
