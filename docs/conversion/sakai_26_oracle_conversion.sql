@@ -129,8 +129,14 @@ BEGIN
         EXECUTE IMMEDIATE 'ALTER TABLE POLL_OPTION MODIFY (OPTION_ORDER NUMBER(10,0) DEFAULT 0 NOT NULL)';
 
         -- --- POLL_VOTE: votes reach a poll through their option now ---
-        -- VOTE_OPTION becomes NOT NULL, so drop votes that never recorded one.
-        EXECUTE IMMEDIATE 'DELETE FROM POLL_VOTE WHERE VOTE_OPTION IS NULL';
+        -- VOTE_OPTION becomes NOT NULL, so drop votes that never recorded one,
+        -- plus votes that still point at an OPTION_ID just deleted above as
+        -- orphaned (poll with an unresolvable POLL_UUID). Without the second
+        -- half of this condition those votes survive the migration as
+        -- orphans referencing a non-existent option.
+        EXECUTE IMMEDIATE 'DELETE FROM POLL_VOTE
+            WHERE VOTE_OPTION IS NULL
+               OR VOTE_OPTION NOT IN (SELECT OPTION_ID FROM POLL_OPTION)';
         EXECUTE IMMEDIATE 'ALTER TABLE POLL_VOTE DROP COLUMN VOTE_POLL_ID';
         EXECUTE IMMEDIATE 'ALTER TABLE POLL_VOTE MODIFY (VOTE_OPTION NUMBER(19,0) NOT NULL)';
         EXECUTE IMMEDIATE 'ALTER TABLE POLL_VOTE MODIFY (USER_ID VARCHAR2(99) NOT NULL)';
