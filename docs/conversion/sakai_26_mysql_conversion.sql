@@ -159,3 +159,32 @@ REFERENCES POLL_POLL (POLL_ID);
 ALTER TABLE POLL_POLL
 ADD COLUMN ACCESS_TYPE varchar(10) NOT NULL DEFAULT 'SITE';
 -- END SAK-10208
+
+-- SAK-52889: migrate Conversations tags and retire Taggable.
+ALTER TABLE tagservice_tag DROP FOREIGN KEY tagservice_tag_ibfk_1;
+ALTER TABLE tagservice_collection MODIFY tagcollectionid VARCHAR(99) NOT NULL;
+ALTER TABLE tagservice_tag MODIFY tagcollectionid VARCHAR(99) NOT NULL;
+ALTER TABLE tagservice_tag ADD CONSTRAINT tagservice_tag_ibfk_1
+    FOREIGN KEY (tagcollectionid) REFERENCES tagservice_collection(tagcollectionid)
+    ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+INSERT INTO tagservice_collection
+    (tagcollectionid, name, description, creationdate, lastmodificationdate,
+     lastsynchronizationdate, externalupdate, externalcreation, lastupdatedateinexternalsystem)
+    SELECT DISTINCT t.SITE_ID, t.SITE_ID, 'Site tags', 0, 0, 0, 0, 0, 0
+    FROM CONV_TAGS t WHERE NOT EXISTS
+        (SELECT 1 FROM tagservice_collection c WHERE c.tagcollectionid = t.SITE_ID);
+
+INSERT INTO tagservice_tag
+    (tagid, tagcollectionid, taglabel, description, creationdate, lastmodificationdate,
+     externalcreation, externalcreationDate, externalupdate, lastupdatedateinexternalsystem)
+    SELECT CONCAT('conv-', TAG_ID), SITE_ID,
+        LABEL, DESCRIPTION, 0, 0, 0, 0, 0, 0 FROM CONV_TAGS;
+
+INSERT INTO tagservice_tagassociation (id, item_id, tag_id)
+    SELECT UUID(), TOPIC_ID, CONCAT('conv-', TAG)
+    FROM CONV_TOPIC_TAGS;
+
+DROP TABLE CONV_TOPIC_TAGS;
+DROP TABLE CONV_TAGS;
+DROP TABLE TAGGABLE_LINK;
