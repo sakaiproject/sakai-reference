@@ -213,3 +213,12 @@ DROP TABLE CONV_TOPIC_TAGS;
 DROP TABLE CONV_TAGS;
 DROP SEQUENCE CONV_TAGS_S;
 DROP TABLE TAGGABLE_LINK;
+
+-- SAK-52581 start
+CREATE TABLE lti_tool_permissions (
+  tool_id NUMBER(19,0) NOT NULL,
+  permission VARCHAR2(255) NULL,
+  CONSTRAINT fk_lti_tool_permissions_tool
+    FOREIGN KEY (tool_id) REFERENCES tool (id)
+);
+-- SAK-52581 end
