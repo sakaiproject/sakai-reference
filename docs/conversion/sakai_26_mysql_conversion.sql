@@ -190,3 +190,11 @@ INSERT INTO tagservice_tagassociation (id, item_id, tag_id)
 DROP TABLE CONV_TOPIC_TAGS;
 DROP TABLE CONV_TAGS;
 DROP TABLE TAGGABLE_LINK;
+
+-- SAK-52581 start
+CREATE TABLE lti_tool_permissions (
+  tool_id bigint NOT NULL,
+  permission varchar(255) DEFAULT NULL,
+  FOREIGN KEY (tool_id) REFERENCES tool (id)
+);
+-- SAK-52581 end
