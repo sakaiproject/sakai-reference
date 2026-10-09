@@ -144,6 +144,26 @@ CALL polls_migrate_jpa();
 DROP PROCEDURE IF EXISTS polls_migrate_jpa;
 -- END SAK-52039
 
+-- SAK-52971 Polls: renumber OPTION_ORDER contiguously per poll
+
+-- Legacy Polls did not keep OPTION_ORDER contiguous: a new option took the
+-- current option count as its order and deletions did not renumber. The JPA
+-- entity uses OPTION_ORDER as the @OrderColumn list index, so gaps become null
+-- elements and repeated values hide options. Renumber each poll's options from
+-- 0, keeping the current order and, for ties, creation order (OPTION_ID).
+-- It runs outside the schema guard of the SAK-52039 conversion above, so it
+-- also fixes instances converted before this step existed. Only rows whose
+-- order changes are updated, so it is safe to re-run.
+UPDATE POLL_OPTION o
+JOIN (
+    SELECT OPTION_ID,
+           ROW_NUMBER() OVER (PARTITION BY OPTION_POLL_ID ORDER BY OPTION_ORDER, OPTION_ID) - 1 AS NEW_ORDER
+    FROM POLL_OPTION
+) r ON r.OPTION_ID = o.OPTION_ID
+SET o.OPTION_ORDER = r.NEW_ORDER
+WHERE o.OPTION_ORDER <> r.NEW_ORDER;
+-- END SAK-52971
+
 -- START SAK-10208
 CREATE TABLE POLL_GROUPS (
   POLL_ID varchar(36) NOT NULL,
