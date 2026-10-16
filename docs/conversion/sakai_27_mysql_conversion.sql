@@ -473,3 +473,17 @@ CALL sakai_rename_unique_index('tagservice_collection', 'UK_pje21f9w8lpgap08wcph
 DROP PROCEDURE IF EXISTS sakai_rename_unique_index;
 
 -- END SAK-52757
+
+-- START SAK-53019
+-- Password-reset tokens and per-account email limits are independent of account validation.
+CREATE TABLE PASSWORD_RESET (
+  USER_ID VARCHAR(99) NOT NULL,
+  VERSION BIGINT NOT NULL,
+  RESET_TOKEN VARCHAR(36),
+  CREATED_AT DATETIME(6),
+  CONSUMED_AT DATETIME(6),
+  REQUEST_TIMES TEXT NOT NULL,
+  CONSTRAINT PK_PASSWORD_RESET PRIMARY KEY (USER_ID),
+  CONSTRAINT UK_PASSWORD_RESET_TOKEN UNIQUE (RESET_TOKEN)
+) ENGINE=InnoDB;
+-- END SAK-53019
