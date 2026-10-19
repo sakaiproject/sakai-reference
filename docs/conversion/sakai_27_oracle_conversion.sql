@@ -213,3 +213,8 @@ DROP TABLE CONV_TOPIC_TAGS;
 DROP TABLE CONV_TAGS;
 DROP SEQUENCE CONV_TAGS_S;
 DROP TABLE TAGGABLE_LINK;
+
+-- SAK-52803: Drop the legacy criterion foreign keys reported on upgraded databases.
+ALTER TABLE rbc_criterion_outcome DROP CONSTRAINT FK_h43853lsee9xsay4qlic80pkv;
+ALTER TABLE rbc_returned_criterion_out DROP CONSTRAINT fk_rbc_returned_criterion_id;
+-- END SAK-52803
