@@ -473,3 +473,6 @@ CALL sakai_rename_unique_index('tagservice_collection', 'UK_pje21f9w8lpgap08wcph
 DROP PROCEDURE IF EXISTS sakai_rename_unique_index;
 
 -- END SAK-52757
+
+-- SAK-52991 Preferences optimistic locking
+ALTER TABLE SAKAI_PREFERENCES ADD COLUMN VERSION BIGINT DEFAULT 0 NOT NULL;
