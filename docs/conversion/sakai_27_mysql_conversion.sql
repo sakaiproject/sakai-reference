@@ -473,3 +473,29 @@ CALL sakai_rename_unique_index('tagservice_collection', 'UK_pje21f9w8lpgap08wcph
 DROP PROCEDURE IF EXISTS sakai_rename_unique_index;
 
 -- END SAK-52757
+
+-- SAK-52803: Remove legacy outcome-to-criterion foreign keys absent from current mappings.
+-- Constraint names differ between older Hibernate schemas; preserve all other relationships.
+SELECT IFNULL(CONCAT('ALTER TABLE `rbc_criterion_outcome` ',
+        GROUP_CONCAT(DISTINCT CONCAT('DROP FOREIGN KEY `', REPLACE(CONSTRAINT_NAME, '`', '``'), '`') SEPARATOR ', ')), 'DO 0')
+    INTO @sakai_rubric_fk_sql
+    FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'rbc_criterion_outcome'
+      AND COLUMN_NAME = 'criterion_id' AND REFERENCED_TABLE_SCHEMA = DATABASE()
+      AND REFERENCED_TABLE_NAME = 'rbc_criterion' AND REFERENCED_COLUMN_NAME = 'id';
+PREPARE sakai_rubric_fk_stmt FROM @sakai_rubric_fk_sql;
+EXECUTE sakai_rubric_fk_stmt;
+DEALLOCATE PREPARE sakai_rubric_fk_stmt;
+
+SELECT IFNULL(CONCAT('ALTER TABLE `rbc_returned_criterion_out` ',
+        GROUP_CONCAT(DISTINCT CONCAT('DROP FOREIGN KEY `', REPLACE(CONSTRAINT_NAME, '`', '``'), '`') SEPARATOR ', ')), 'DO 0')
+    INTO @sakai_rubric_fk_sql
+    FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'rbc_returned_criterion_out'
+      AND COLUMN_NAME = 'criterion_id' AND REFERENCED_TABLE_SCHEMA = DATABASE()
+      AND REFERENCED_TABLE_NAME = 'rbc_criterion' AND REFERENCED_COLUMN_NAME = 'id';
+PREPARE sakai_rubric_fk_stmt FROM @sakai_rubric_fk_sql;
+EXECUTE sakai_rubric_fk_stmt;
+DEALLOCATE PREPARE sakai_rubric_fk_stmt;
+
+-- END SAK-52803
