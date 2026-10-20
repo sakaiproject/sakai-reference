@@ -332,6 +332,7 @@ AND NOT EXISTS (SELECT 1 FROM SAKAI_SITE_TOOL WHERE SITE_ID = '!admin' AND REGIS
 CREATE TABLE lti_tool_permissions (
   tool_id NUMBER(19,0) NOT NULL,
   permission VARCHAR2(255 CHAR) NULL,
+  CONSTRAINT uk_lti_tool_permissions UNIQUE (tool_id, permission),
   CONSTRAINT fk_lti_tool_permissions_tool
     FOREIGN KEY (tool_id) REFERENCES lti_tools (id)
 );
