@@ -166,6 +166,26 @@ END;
 /
 -- END SAK-52039
 
+-- SAK-52971 Polls: renumber OPTION_ORDER contiguously per poll
+
+-- Legacy Polls did not keep OPTION_ORDER contiguous: a new option took the
+-- current option count as its order and deletions did not renumber. The JPA
+-- entity uses OPTION_ORDER as the @OrderColumn list index, so gaps become null
+-- elements and repeated values hide options. Renumber each poll's options from
+-- 0, keeping the current order and, for ties, creation order (OPTION_ID).
+-- It runs outside the schema guard of the SAK-52039 conversion above, so it
+-- also fixes instances converted before this step existed. Only rows whose
+-- order changes are updated, so it is safe to re-run.
+MERGE INTO POLL_OPTION o
+USING (
+    SELECT OPTION_ID,
+           ROW_NUMBER() OVER (PARTITION BY OPTION_POLL_ID ORDER BY OPTION_ORDER, OPTION_ID) - 1 AS NEW_ORDER
+    FROM POLL_OPTION
+) r ON (o.OPTION_ID = r.OPTION_ID)
+WHEN MATCHED THEN UPDATE SET o.OPTION_ORDER = r.NEW_ORDER
+WHERE o.OPTION_ORDER <> r.NEW_ORDER;
+-- END SAK-52971
+
 -- START SAK-10208
 CREATE TABLE POLL_GROUPS (
   POLL_ID VARCHAR2(36 CHAR) NOT NULL,
@@ -327,6 +347,9 @@ WHERE EXISTS (SELECT 1 FROM SAKAI_SITE_PAGE WHERE PAGE_ID = '!admin-52046')
 AND NOT EXISTS (SELECT 1 FROM SAKAI_SITE_TOOL WHERE SITE_ID = '!admin' AND REGISTRATION = 'sakai.tagservice');
 
 -- END SAK-52046
+
+-- SAK-52991 Preferences optimistic locking
+ALTER TABLE SAKAI_PREFERENCES ADD (VERSION NUMBER(19) DEFAULT 0 NOT NULL);
 
 -- SAK-52581 start
 CREATE TABLE lti_tool_permissions (
