@@ -474,6 +474,17 @@ DROP PROCEDURE IF EXISTS sakai_rename_unique_index;
 
 -- END SAK-52757
 
+-- SAK-53029 / SAK-49798: Initialize Rubrics revisions and retain unknown historical editors.
+ALTER TABLE rbc_rubric ADD COLUMN VERSION BIGINT NOT NULL DEFAULT 0, ADD COLUMN LAST_MODIFIED_BY VARCHAR(99) NULL;
+ALTER TABLE rbc_criterion ADD COLUMN VERSION BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE rbc_rating ADD COLUMN VERSION BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE rbc_evaluation ADD COLUMN VERSION BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE rbc_criterion_outcome ADD COLUMN VERSION BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE rbc_returned_evaluation ADD COLUMN VERSION BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE rbc_returned_criterion_out ADD COLUMN VERSION BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE rbc_tool_item_rbc_assoc ADD COLUMN VERSION BIGINT NOT NULL DEFAULT 0;
+-- END SAK-53029
+
 -- SAK-52803: Drop the legacy criterion foreign keys reported on upgraded databases.
 -- rbc_criterion_outcome.criterion_id references rbc_criterion.id.
 ALTER TABLE rbc_criterion_outcome DROP FOREIGN KEY FK_h43853lsee9xsay4qlic80pkv;
