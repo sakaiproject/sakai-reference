@@ -225,6 +225,27 @@ ALTER TABLE rbc_returned_criterion_out ADD (VERSION NUMBER(19,0) DEFAULT 0 NOT N
 ALTER TABLE rbc_tool_item_rbc_assoc ADD (VERSION NUMBER(19,0) DEFAULT 0 NOT NULL);
 -- END SAK-53029
 
+-- SAK-52803: Drop the legacy criterion foreign keys reported on upgraded databases.
+-- rbc_criterion_outcome.criterion_id references rbc_criterion.id.
+ALTER TABLE rbc_criterion_outcome DROP CONSTRAINT FK_h43853lsee9xsay4qlic80pkv;
+-- rbc_returned_criterion_out.criterion_id references rbc_criterion.id.
+ALTER TABLE rbc_returned_criterion_out DROP CONSTRAINT fk_rbc_returned_criterion_id;
+-- END SAK-52803
+
+-- START SAK-53019
+-- Password-reset tokens and per-account email limits are independent of account validation.
+CREATE TABLE PASSWORD_RESET (
+  USER_ID VARCHAR2(99 CHAR) NOT NULL,
+  VERSION NUMBER(19,0) NOT NULL,
+  RESET_TOKEN VARCHAR2(36 CHAR),
+  CREATED_AT TIMESTAMP(6),
+  CONSUMED_AT TIMESTAMP(6),
+  REQUEST_TIMES CLOB NOT NULL,
+  CONSTRAINT PK_PASSWORD_RESET PRIMARY KEY (USER_ID),
+  CONSTRAINT UK_PASSWORD_RESET_TOKEN UNIQUE (RESET_TOKEN)
+);
+-- END SAK-53019
+
 -- START SAK-52046
 -- SAK-52046: run once, with Sakai stopped, after the Tags/Taggable merger conversion.
 -- Back up the database first. Unscoped imported/admin collections remain global.
