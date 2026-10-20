@@ -9,19 +9,36 @@ ALTER TABLE SAM_PUBLISHEDASSESSMENT_T MODIFY COMMENTS VARCHAR(4000) NULL;
 
 -- START SAK-48981 Permission Level Data Cleanup (MySQL)
 
--- NULL out PERMISSION_LEVEL for standard-named items
--- this is aggrssive and is best run after a semester ends and before the next starts
--- which is why it is commented out, organizations should decide when best to run it
+-- Clear stored levels only when all 15 flags match the corresponding global default.
+UPDATE MFR_MEMBERSHIP_ITEM_T item
+JOIN MFR_PERMISSION_LEVEL_T stored_level ON stored_level.ID = item.PERMISSION_LEVEL
+JOIN CMN_TYPE_T default_type
+  ON default_type.AUTHORITY = 'org.sakaiproject.component.app.messageforums'
+ AND default_type.DOMAIN = 'sakai_messageforums'
+ AND default_type.KEYWORD = CONCAT(item.PERMISSION_LEVEL_NAME, ' Permission Level')
+JOIN MFR_PERMISSION_LEVEL_T default_level ON default_level.TYPE_UUID = default_type.UUID
+SET item.PERMISSION_LEVEL = NULL
+WHERE item.PERMISSION_LEVEL_NAME IN (
+          'Owner', 'Author', 'Nonediting Author',
+          'Contributor', 'Reviewer', 'None'
+      )
+  AND stored_level.CHANGE_SETTINGS = default_level.CHANGE_SETTINGS
+  AND stored_level.DELETE_ANY = default_level.DELETE_ANY
+  AND stored_level.DELETE_OWN = default_level.DELETE_OWN
+  AND stored_level.MARK_AS_READ = default_level.MARK_AS_READ
+  AND stored_level.MOVE_POSTING = default_level.MOVE_POSTING
+  AND stored_level.NEW_FORUM = default_level.NEW_FORUM
+  AND stored_level.NEW_RESPONSE = default_level.NEW_RESPONSE
+  AND stored_level.NEW_RESPONSE_TO_RESPONSE = default_level.NEW_RESPONSE_TO_RESPONSE
+  AND stored_level.NEW_TOPIC = default_level.NEW_TOPIC
+  AND stored_level.POST_TO_GRADEBOOK = default_level.POST_TO_GRADEBOOK
+  AND stored_level.X_READ = default_level.X_READ
+  AND stored_level.REVISE_ANY = default_level.REVISE_ANY
+  AND stored_level.REVISE_OWN = default_level.REVISE_OWN
+  AND stored_level.MODERATE_POSTINGS = default_level.MODERATE_POSTINGS
+  AND stored_level.IDENTIFY_ANON_AUTHORS = default_level.IDENTIFY_ANON_AUTHORS;
 
--- UPDATE MFR_MEMBERSHIP_ITEM_T
--- SET    PERMISSION_LEVEL = NULL
--- WHERE  PERMISSION_LEVEL IS NOT NULL
---   AND  PERMISSION_LEVEL_NAME NOT IN ('Custom');
-
--- Delete orphaned non-standard permission level rows
--- Must be run after cleaning standard-named items and stale FKs have already been nulled.
--- Standard-named rows (the six global defaults) are intentionally
--- left in place even if unreferenced.
+-- Delete unreferenced non-standard-named levels; keep all standard-named rows.
 
 DELETE FROM MFR_PERMISSION_LEVEL_T
 WHERE  ID NOT IN (
