@@ -610,3 +610,12 @@ AND NOT EXISTS (SELECT 1 FROM SAKAI_SITE_TOOL WHERE SITE_ID = '!admin' AND REGIS
 
 -- SAK-52991 Preferences optimistic locking
 ALTER TABLE SAKAI_PREFERENCES ADD COLUMN VERSION BIGINT DEFAULT 0 NOT NULL;
+
+-- SAK-52581 start
+CREATE TABLE lti_tool_permissions (
+  tool_id bigint NOT NULL,
+  permission varchar(255) DEFAULT NULL,
+  CONSTRAINT uk_lti_tool_permissions UNIQUE (tool_id, permission),
+  FOREIGN KEY (tool_id) REFERENCES lti_tools (id)
+);
+-- SAK-52581 end
