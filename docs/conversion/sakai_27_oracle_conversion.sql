@@ -224,3 +224,10 @@ ALTER TABLE rbc_returned_evaluation ADD (VERSION NUMBER(19,0) DEFAULT 0 NOT NULL
 ALTER TABLE rbc_returned_criterion_out ADD (VERSION NUMBER(19,0) DEFAULT 0 NOT NULL);
 ALTER TABLE rbc_tool_item_rbc_assoc ADD (VERSION NUMBER(19,0) DEFAULT 0 NOT NULL);
 -- END SAK-53029
+
+-- SAK-52803: Drop the legacy criterion foreign keys reported on upgraded databases.
+-- rbc_criterion_outcome.criterion_id references rbc_criterion.id.
+ALTER TABLE rbc_criterion_outcome DROP CONSTRAINT FK_h43853lsee9xsay4qlic80pkv;
+-- rbc_returned_criterion_out.criterion_id references rbc_criterion.id.
+ALTER TABLE rbc_returned_criterion_out DROP CONSTRAINT fk_rbc_returned_criterion_id;
+-- END SAK-52803

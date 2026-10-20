@@ -484,3 +484,10 @@ ALTER TABLE rbc_returned_evaluation ADD COLUMN VERSION BIGINT NOT NULL DEFAULT 0
 ALTER TABLE rbc_returned_criterion_out ADD COLUMN VERSION BIGINT NOT NULL DEFAULT 0;
 ALTER TABLE rbc_tool_item_rbc_assoc ADD COLUMN VERSION BIGINT NOT NULL DEFAULT 0;
 -- END SAK-53029
+
+-- SAK-52803: Drop the legacy criterion foreign keys reported on upgraded databases.
+-- rbc_criterion_outcome.criterion_id references rbc_criterion.id.
+ALTER TABLE rbc_criterion_outcome DROP FOREIGN KEY FK_h43853lsee9xsay4qlic80pkv;
+-- rbc_returned_criterion_out.criterion_id references rbc_criterion.id.
+ALTER TABLE rbc_returned_criterion_out DROP FOREIGN KEY fk_rbc_returned_criterion_id;
+-- END SAK-52803
