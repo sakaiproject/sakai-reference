@@ -491,3 +491,17 @@ ALTER TABLE rbc_criterion_outcome DROP FOREIGN KEY FK_h43853lsee9xsay4qlic80pkv;
 -- rbc_returned_criterion_out.criterion_id references rbc_criterion.id.
 ALTER TABLE rbc_returned_criterion_out DROP FOREIGN KEY fk_rbc_returned_criterion_id;
 -- END SAK-52803
+
+-- START SAK-53019
+-- Password-reset tokens and per-account email limits are independent of account validation.
+CREATE TABLE PASSWORD_RESET (
+  USER_ID VARCHAR(99) NOT NULL,
+  VERSION BIGINT NOT NULL,
+  RESET_TOKEN VARCHAR(36),
+  CREATED_AT DATETIME(6),
+  CONSUMED_AT DATETIME(6),
+  REQUEST_TIMES TEXT NOT NULL,
+  CONSTRAINT PK_PASSWORD_RESET PRIMARY KEY (USER_ID),
+  CONSTRAINT UK_PASSWORD_RESET_TOKEN UNIQUE (RESET_TOKEN)
+) ENGINE=InnoDB;
+-- END SAK-53019
