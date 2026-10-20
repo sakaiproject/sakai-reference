@@ -37,36 +37,6 @@ COMMIT;
 ALTER TABLE LTI_TOOLS ADD ALLOWGRADEBOOKREADONLY NUMBER(1) DEFAULT 0;
 -- END SAK-52583
 
--- START SAK-48981 Permission Level Data Cleanup (Oracle)
-
--- NULL out PERMISSION_LEVEL for standard-named items
--- this is aggrssive and is best run after a semester ends and before the next starts
--- which is why it is commented out, organizations should decide when best to run it
-
--- UPDATE MFR_MEMBERSHIP_ITEM_T
--- SET    PERMISSION_LEVEL = NULL
--- WHERE  PERMISSION_LEVEL IS NOT NULL
---   AND  PERMISSION_LEVEL_NAME NOT IN ('Custom');
-
--- Delete orphaned non-standard permission level rows
--- Must be run after cleaning standard-named items and stale FKs have already been nulled.
--- Standard-named rows (the six global defaults) are intentionally
--- left in place even if unreferenced.
-
-DELETE FROM MFR_PERMISSION_LEVEL_T
-WHERE  ID NOT IN (
-           SELECT PERMISSION_LEVEL
-           FROM   MFR_MEMBERSHIP_ITEM_T
-           WHERE  PERMISSION_LEVEL IS NOT NULL
-       )
-  AND  NAME NOT IN (
-           'Owner', 'Author', 'Nonediting Author',
-           'Contributor', 'Reviewer', 'None'
-       );
-
-COMMIT;
--- END SAK-48981
-
 -- SAK-51713 --
 -- Permission added might not be present
 MERGE INTO SAKAI_REALM_FUNCTION srf
