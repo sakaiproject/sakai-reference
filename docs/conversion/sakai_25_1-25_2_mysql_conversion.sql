@@ -32,34 +32,6 @@ ALTER TABLE lti_tool_site ADD deployment_group VARCHAR(128) DEFAULT NULL;
 ALTER TABLE lti_tools ADD allowgradebookreadonly TINYINT DEFAULT 0;
 -- END SAK-52583
 
--- START SAK-48981 Permission Level Data Cleanup (MySQL)
-
--- NULL out PERMISSION_LEVEL for standard-named items
--- this is aggrssive and is best run after a semester ends and before the next starts
--- which is why it is commented out, organizations should decide when best to run it
-
--- UPDATE MFR_MEMBERSHIP_ITEM_T
--- SET    PERMISSION_LEVEL = NULL
--- WHERE  PERMISSION_LEVEL IS NOT NULL
---   AND  PERMISSION_LEVEL_NAME NOT IN ('Custom');
-
--- Delete orphaned non-standard permission level rows
--- Must be run after cleaning standard-named items and stale FKs have already been nulled.
--- Standard-named rows (the six global defaults) are intentionally
--- left in place even if unreferenced.
-
-DELETE FROM MFR_PERMISSION_LEVEL_T
-WHERE  ID NOT IN (
-           SELECT PERMISSION_LEVEL
-           FROM   MFR_MEMBERSHIP_ITEM_T
-           WHERE  PERMISSION_LEVEL IS NOT NULL
-       )
-  AND  NAME NOT IN (
-           'Owner', 'Author', 'Nonediting Author',
-           'Contributor', 'Reviewer', 'None'
-       );
--- END SAK-48981
-
 -- SAK-51713 --
 -- Permission added might not be present
 INSERT IGNORE INTO SAKAI_REALM_FUNCTION (FUNCTION_NAME) VALUES ('assessment.all.groups');

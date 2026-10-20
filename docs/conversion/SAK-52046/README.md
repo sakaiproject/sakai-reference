@@ -1,6 +1,6 @@
 # SAK-52046 tag collection conversion
 
-The MySQL and Oracle migrations are the SAK-52046 sections of `../sakai_26_mysql_conversion.sql` and `../sakai_26_oracle_conversion.sql`, after the SAK-52889 Tags/Taggable merger. `hsqldb.sql` supplies the equivalent standalone HSQLDB conversion.
+The MySQL and Oracle migrations are the SAK-52046 sections of `../sakai_27_mysql_conversion.sql` and `../sakai_27_oracle_conversion.sql`, after the SAK-52889 Tags/Taggable merger. `hsqldb.sql` supplies the equivalent standalone HSQLDB conversion.
 
 Run the appropriate conversion once, with Sakai stopped, after taking a database backup. Apply the earlier Tags/Taggable merger conversion first. This conversion must run before starting the version containing the `siteid` mapping; automatic schema updates cannot classify existing collections.
 
