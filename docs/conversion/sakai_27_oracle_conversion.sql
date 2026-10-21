@@ -372,7 +372,7 @@ INSERT (function_key, function_name)
 VALUES (SAKAI_REALM_FUNCTION_SEQ.NEXTVAL, t.function_name);
 
 -- Templates
-INSERT INTO SAKAI_REALM_RL_FN
+INSERT INTO SAKAI_REALM_RL_FN (REALM_KEY, ROLE_KEY, FUNCTION_KEY)
 SELECT DISTINCT SR.REALM_KEY, SRR.ROLE_KEY, SRF.FUNCTION_KEY
 FROM SAKAI_REALM SR
 JOIN SAKAI_REALM_ROLE SRR ON SRR.ROLE_NAME = 'Student'
@@ -385,7 +385,7 @@ WHERE SR.REALM_ID = '!site.template.course'
       AND EXISTING.FUNCTION_KEY = SRF.FUNCTION_KEY
   );
 
-INSERT INTO SAKAI_REALM_RL_FN
+INSERT INTO SAKAI_REALM_RL_FN (REALM_KEY, ROLE_KEY, FUNCTION_KEY)
 SELECT DISTINCT SR.REALM_KEY, SRR.ROLE_KEY, SRF.FUNCTION_KEY
 FROM SAKAI_REALM SR
 JOIN SAKAI_REALM_ROLE SRR ON SRR.ROLE_NAME = 'access'
@@ -440,52 +440,93 @@ COMMIT;
 
 -- template = 1
 UPDATE SAKAI_SITE_PROPERTY
-SET VALUE = JSON_MERGEPATCH(
-  JSON_REMOVE(VALUE, '$.template', '$.overviewW', '$.overviewH', '$.imageW', '$.imageH', '$.widgetLayout'),
-  '{"heroWidth":"wide","showImage":false}'
+SET VALUE = JSON_TRANSFORM(
+  VALUE,
+  REMOVE '$.template',
+  REMOVE '$.overviewW',
+  REMOVE '$.overviewH',
+  REMOVE '$.imageW',
+  REMOVE '$.imageH',
+  REMOVE '$.widgetLayout',
+  SET '$.heroWidth' = 'wide',
+  SET '$.showImage' = FALSE
 )
 WHERE NAME = 'dashboard-config'
   AND VALUE IS NOT NULL
+  AND VALUE IS JSON
   AND NOT JSON_EXISTS(VALUE, '$.heroWidth')
   AND JSON_EXISTS(VALUE, '$.template?(@ == 1)');
 
 -- template = 2
 UPDATE SAKAI_SITE_PROPERTY
-SET VALUE = JSON_MERGEPATCH(
-  JSON_REMOVE(VALUE, '$.template', '$.overviewW', '$.overviewH', '$.imageW', '$.imageH', '$.widgetLayout'),
-  '{"heroWidth":"full","showImage":true}'
+SET VALUE = JSON_TRANSFORM(
+  VALUE,
+  REMOVE '$.template',
+  REMOVE '$.overviewW',
+  REMOVE '$.overviewH',
+  REMOVE '$.imageW',
+  REMOVE '$.imageH',
+  REMOVE '$.widgetLayout',
+  SET '$.heroWidth' = 'full',
+  SET '$.showImage' = TRUE
 )
 WHERE NAME = 'dashboard-config'
   AND VALUE IS NOT NULL
+  AND VALUE IS JSON
   AND NOT JSON_EXISTS(VALUE, '$.heroWidth')
   AND JSON_EXISTS(VALUE, '$.template?(@ == 2)');
 
 -- template = 3
 UPDATE SAKAI_SITE_PROPERTY
-SET VALUE = JSON_MERGEPATCH(
-  JSON_REMOVE(VALUE, '$.template', '$.overviewW', '$.overviewH', '$.imageW', '$.imageH', '$.widgetLayout'),
-  '{"heroWidth":"narrow","showImage":false}'
+SET VALUE = JSON_TRANSFORM(
+  VALUE,
+  REMOVE '$.template',
+  REMOVE '$.overviewW',
+  REMOVE '$.overviewH',
+  REMOVE '$.imageW',
+  REMOVE '$.imageH',
+  REMOVE '$.widgetLayout',
+  SET '$.heroWidth' = 'narrow',
+  SET '$.showImage' = FALSE
 )
 WHERE NAME = 'dashboard-config'
   AND VALUE IS NOT NULL
+  AND VALUE IS JSON
   AND NOT JSON_EXISTS(VALUE, '$.heroWidth')
   AND JSON_EXISTS(VALUE, '$.template?(@ == 3)');
 
 -- missing / other template, or any remaining config without heroWidth
 UPDATE SAKAI_SITE_PROPERTY
-SET VALUE = JSON_MERGEPATCH(
-  JSON_REMOVE(VALUE, '$.template', '$.overviewW', '$.overviewH', '$.imageW', '$.imageH', '$.widgetLayout'),
-  '{"heroWidth":"wide","showImage":true}'
+SET VALUE = JSON_TRANSFORM(
+  VALUE,
+  REMOVE '$.template',
+  REMOVE '$.overviewW',
+  REMOVE '$.overviewH',
+  REMOVE '$.imageW',
+  REMOVE '$.imageH',
+  REMOVE '$.widgetLayout',
+  SET '$.heroWidth' = 'wide',
+  SET '$.showImage' = TRUE
 )
 WHERE NAME = 'dashboard-config'
   AND VALUE IS NOT NULL
+  AND VALUE IS JSON
   AND NOT JSON_EXISTS(VALUE, '$.heroWidth');
 
 -- Strip leftover legacy keys (including widgetLayout) from already-migrated configs
 UPDATE SAKAI_SITE_PROPERTY
-SET VALUE = JSON_REMOVE(VALUE, '$.template', '$.overviewW', '$.overviewH', '$.imageW', '$.imageH', '$.widgetLayout')
+SET VALUE = JSON_TRANSFORM(
+  VALUE,
+  REMOVE '$.template',
+  REMOVE '$.overviewW',
+  REMOVE '$.overviewH',
+  REMOVE '$.imageW',
+  REMOVE '$.imageH',
+  REMOVE '$.widgetLayout'
+)
 WHERE NAME = 'dashboard-config'
   AND VALUE IS NOT NULL
+  AND VALUE IS JSON
   AND JSON_EXISTS(VALUE, '$.heroWidth')
   AND (
     JSON_EXISTS(VALUE, '$.template')
