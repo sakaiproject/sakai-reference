@@ -619,3 +619,135 @@ CREATE TABLE lti_tool_permissions (
   FOREIGN KEY (tool_id) REFERENCES lti_tools (id)
 );
 -- SAK-52581 end
+
+-- SAK-53022 start
+-- Unlocks the SiteStats tool for learners so they can see AUDIENCE_OWN overview widgets
+INSERT IGNORE INTO SAKAI_REALM_FUNCTION (FUNCTION_NAME) VALUES ('sitestats.view');
+
+-- Templates
+INSERT INTO SAKAI_REALM_RL_FN
+SELECT DISTINCT SR.REALM_KEY, SRR.ROLE_KEY, SRF.FUNCTION_KEY
+FROM SAKAI_REALM SR
+JOIN SAKAI_REALM_ROLE SRR ON SRR.ROLE_NAME = 'Student'
+JOIN SAKAI_REALM_FUNCTION SRF ON SRF.FUNCTION_NAME = 'sitestats.view'
+WHERE SR.REALM_ID = '!site.template.course'
+  AND NOT EXISTS (
+    SELECT 1 FROM SAKAI_REALM_RL_FN EXISTING
+    WHERE EXISTING.REALM_KEY = SR.REALM_KEY
+      AND EXISTING.ROLE_KEY = SRR.ROLE_KEY
+      AND EXISTING.FUNCTION_KEY = SRF.FUNCTION_KEY
+  );
+
+INSERT INTO SAKAI_REALM_RL_FN
+SELECT DISTINCT SR.REALM_KEY, SRR.ROLE_KEY, SRF.FUNCTION_KEY
+FROM SAKAI_REALM SR
+JOIN SAKAI_REALM_ROLE SRR ON SRR.ROLE_NAME = 'access'
+JOIN SAKAI_REALM_FUNCTION SRF ON SRF.FUNCTION_NAME = 'sitestats.view'
+WHERE SR.REALM_ID = '!site.template'
+  AND NOT EXISTS (
+    SELECT 1 FROM SAKAI_REALM_RL_FN EXISTING
+    WHERE EXISTING.REALM_KEY = SR.REALM_KEY
+      AND EXISTING.ROLE_KEY = SRR.ROLE_KEY
+      AND EXISTING.FUNCTION_KEY = SRF.FUNCTION_KEY
+  );
+
+-- Propagate to existing realms (exclude helper / user templates)
+CREATE TABLE PERMISSIONS_SRC_TEMP (ROLE_NAME VARCHAR(99), FUNCTION_NAME VARCHAR(99));
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES ('Student', 'sitestats.view');
+INSERT INTO PERMISSIONS_SRC_TEMP VALUES ('access', 'sitestats.view');
+
+CREATE TABLE PERMISSIONS_TEMP (ROLE_KEY INTEGER, FUNCTION_KEY INTEGER);
+INSERT INTO PERMISSIONS_TEMP (ROLE_KEY, FUNCTION_KEY)
+  SELECT SRR.ROLE_KEY, SRF.FUNCTION_KEY
+    FROM PERMISSIONS_SRC_TEMP TMPSRC
+    JOIN SAKAI_REALM_ROLE SRR ON (TMPSRC.ROLE_NAME = SRR.ROLE_NAME)
+    JOIN SAKAI_REALM_FUNCTION SRF ON (TMPSRC.FUNCTION_NAME = SRF.FUNCTION_NAME);
+
+INSERT INTO SAKAI_REALM_RL_FN (REALM_KEY, ROLE_KEY, FUNCTION_KEY)
+  SELECT SRRFD.REALM_KEY, SRRFD.ROLE_KEY, TMP.FUNCTION_KEY
+  FROM
+    (SELECT DISTINCT SRRF.REALM_KEY, SRRF.ROLE_KEY FROM SAKAI_REALM_RL_FN SRRF) SRRFD
+    JOIN PERMISSIONS_TEMP TMP ON (SRRFD.ROLE_KEY = TMP.ROLE_KEY)
+    JOIN SAKAI_REALM SR ON (SRRFD.REALM_KEY = SR.REALM_KEY)
+    WHERE SR.REALM_ID != '!site.helper' AND SR.REALM_ID NOT LIKE '!user.template%'
+    AND NOT EXISTS (
+        SELECT 1
+            FROM SAKAI_REALM_RL_FN SRRFI
+            WHERE SRRFI.REALM_KEY=SRRFD.REALM_KEY AND SRRFI.ROLE_KEY=SRRFD.ROLE_KEY AND SRRFI.FUNCTION_KEY=TMP.FUNCTION_KEY
+    );
+
+DROP TABLE PERMISSIONS_TEMP;
+DROP TABLE PERMISSIONS_SRC_TEMP;
+
+-- Migrate template layout to heroWidth/showImage
+-- Converts legacy dashboard-config JSON when template is still present:
+--   template 1 → heroWidth=wide, showImage=false
+--   template 2 → heroWidth=full, showImage=true
+--   template 3 → heroWidth=narrow, showImage=false
+--   missing / other → heroWidth=wide, showImage=true (product default)
+-- Also strips widgetLayout, template, overviewW/H, imageW/H from site config.
+-- Idempotent for installs that already have heroWidth (skips remap).
+
+-- template = 1
+UPDATE SAKAI_SITE_PROPERTY
+SET VALUE = JSON_REMOVE(
+  JSON_SET(VALUE, '$.heroWidth', 'wide', '$.showImage', false),
+  '$.template', '$.overviewW', '$.overviewH', '$.imageW', '$.imageH', '$.widgetLayout'
+)
+WHERE NAME = 'dashboard-config'
+  AND VALUE IS NOT NULL
+  AND JSON_VALID(VALUE)
+  AND JSON_EXTRACT(VALUE, '$.heroWidth') IS NULL
+  AND JSON_EXTRACT(VALUE, '$.template') = 1;
+
+-- template = 2
+UPDATE SAKAI_SITE_PROPERTY
+SET VALUE = JSON_REMOVE(
+  JSON_SET(VALUE, '$.heroWidth', 'full', '$.showImage', true),
+  '$.template', '$.overviewW', '$.overviewH', '$.imageW', '$.imageH', '$.widgetLayout'
+)
+WHERE NAME = 'dashboard-config'
+  AND VALUE IS NOT NULL
+  AND JSON_VALID(VALUE)
+  AND JSON_EXTRACT(VALUE, '$.heroWidth') IS NULL
+  AND JSON_EXTRACT(VALUE, '$.template') = 2;
+
+-- template = 3
+UPDATE SAKAI_SITE_PROPERTY
+SET VALUE = JSON_REMOVE(
+  JSON_SET(VALUE, '$.heroWidth', 'narrow', '$.showImage', false),
+  '$.template', '$.overviewW', '$.overviewH', '$.imageW', '$.imageH', '$.widgetLayout'
+)
+WHERE NAME = 'dashboard-config'
+  AND VALUE IS NOT NULL
+  AND JSON_VALID(VALUE)
+  AND JSON_EXTRACT(VALUE, '$.heroWidth') IS NULL
+  AND JSON_EXTRACT(VALUE, '$.template') = 3;
+
+-- missing / other template, or any remaining config without heroWidth
+UPDATE SAKAI_SITE_PROPERTY
+SET VALUE = JSON_REMOVE(
+  JSON_SET(VALUE, '$.heroWidth', 'wide', '$.showImage', true),
+  '$.template', '$.overviewW', '$.overviewH', '$.imageW', '$.imageH', '$.widgetLayout'
+)
+WHERE NAME = 'dashboard-config'
+  AND VALUE IS NOT NULL
+  AND JSON_VALID(VALUE)
+  AND JSON_EXTRACT(VALUE, '$.heroWidth') IS NULL;
+
+-- Strip leftover legacy keys (including widgetLayout) from already-migrated configs
+UPDATE SAKAI_SITE_PROPERTY
+SET VALUE = JSON_REMOVE(VALUE, '$.template', '$.overviewW', '$.overviewH', '$.imageW', '$.imageH', '$.widgetLayout')
+WHERE NAME = 'dashboard-config'
+  AND VALUE IS NOT NULL
+  AND JSON_VALID(VALUE)
+  AND JSON_EXTRACT(VALUE, '$.heroWidth') IS NOT NULL
+  AND (
+    JSON_CONTAINS_PATH(VALUE, 'one', '$.template')
+    OR JSON_CONTAINS_PATH(VALUE, 'one', '$.overviewW')
+    OR JSON_CONTAINS_PATH(VALUE, 'one', '$.overviewH')
+    OR JSON_CONTAINS_PATH(VALUE, 'one', '$.imageW')
+    OR JSON_CONTAINS_PATH(VALUE, 'one', '$.imageH')
+    OR JSON_CONTAINS_PATH(VALUE, 'one', '$.widgetLayout')
+  );
+-- SAK-53022 end
