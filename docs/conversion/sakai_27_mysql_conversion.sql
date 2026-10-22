@@ -619,3 +619,192 @@ CREATE TABLE lti_tool_permissions (
   FOREIGN KEY (tool_id) REFERENCES lti_tools (id)
 );
 -- SAK-52581 end
+
+-- Attendance: integrate the contrib tool in Sakai 27 (sakaiproject/sakai#15237).
+-- Run with Sakai stopped, a verified backup, and an SQL client that aborts on errors.
+-- Attendance was optional: skip installations without its tables. Existing installations
+-- must already have the contrib 1.0 and 20170215 schema upgrades applied.
+-- Do not also run the contrib Sakai 25 grading conversion: this block includes it.
+-- Duplicate sites/records/rules require administrator reconciliation before upgrading.
+-- Preserve conflicting grades, statuses and comments; never choose a winner by MIN(id).
+-- For duplicate SITE_IDs, reconcile/repoint children in ATTENDANCE_EVENT_T,
+-- ATTENDANCE_STATUS_T, ATTENDANCE_GRADE_T, ATTENDANCE_USER_STATS_T and ATTENDANCE_RULE_T.
+-- For duplicate (USER_ID, A_EVENT_ID) records or grading rules, retain the intended
+-- values and historical backup before removing redundant rows. Recalculate Attendance
+-- statistics after reconciliation and verify manual grades and Gradebook links.
+DROP PROCEDURE IF EXISTS attendance_migrate_27;
+DELIMITER //
+CREATE PROCEDURE attendance_migrate_27()
+BEGIN
+    DECLARE table_count INT;
+    DECLARE site_table VARCHAR(64);
+    DECLARE event_table VARCHAR(64);
+    DECLARE record_table VARCHAR(64);
+    DECLARE grade_table VARCHAR(64);
+    DECLARE rule_table VARCHAR(64);
+    SELECT COUNT(*) INTO table_count FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) IN (
+        'attendance_site_t', 'attendance_event_t', 'attendance_record_t',
+        'attendance_grade_t', 'attendance_rule_t');
+    IF table_count > 0 THEN
+        IF table_count <> 5 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Incomplete Attendance schema; apply contrib 1.0/20170215 upgrades first';
+        END IF;
+
+        -- Use actual names: contrib SQL used lowercase, while Hibernate can create uppercase names.
+        SELECT TABLE_NAME INTO site_table FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_site_t';
+        SELECT TABLE_NAME INTO event_table FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_event_t';
+        SELECT TABLE_NAME INTO record_table FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_record_t';
+        SELECT TABLE_NAME INTO grade_table FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_grade_t';
+        SELECT TABLE_NAME INTO rule_table FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_rule_t';
+
+        -- All data checks precede Attendance DDL, which commits implicitly.
+        SET @attendance_27_sql = CONCAT('SELECT COUNT(*) INTO @attendance_27_duplicates FROM (SELECT 1 FROM `', site_table, '` GROUP BY SITE_ID HAVING COUNT(*) > 1) duplicates');
+        PREPARE attendance_27_statement FROM @attendance_27_sql;
+        EXECUTE attendance_27_statement;
+        DEALLOCATE PREPARE attendance_27_statement;
+        IF @attendance_27_duplicates > 0 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Attendance duplicates in attendance_site_t; reconcile before upgrading';
+        END IF;
+        SET @attendance_27_sql = CONCAT('SELECT COUNT(*) INTO @attendance_27_duplicates FROM (SELECT 1 FROM `', record_table, '` GROUP BY USER_ID, A_EVENT_ID HAVING COUNT(*) > 1) duplicates');
+        PREPARE attendance_27_statement FROM @attendance_27_sql;
+        EXECUTE attendance_27_statement;
+        DEALLOCATE PREPARE attendance_27_statement;
+        IF @attendance_27_duplicates > 0 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Attendance duplicates in attendance_record_t; reconcile before upgrading';
+        END IF;
+        SET @attendance_27_sql = CONCAT('SELECT COUNT(*) INTO @attendance_27_duplicates FROM (SELECT 1 FROM `', rule_table, '` GROUP BY A_SITE_ID, STATUS, START_RANGE, END_RANGE HAVING COUNT(*) > 1) duplicates');
+        PREPARE attendance_27_statement FROM @attendance_27_sql;
+        EXECUTE attendance_27_statement;
+        DEALLOCATE PREPARE attendance_27_statement;
+        IF @attendance_27_duplicates > 0 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Attendance duplicates in attendance_rule_t; reconcile before upgrading';
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_site_t' AND COLUMN_NAME = 'GRADING_METHOD')
+           AND (NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_site_t' AND COLUMN_NAME = 'AUTO_GRADING')
+                OR NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_site_t' AND COLUMN_NAME = 'GRADE_BY_SUBTRACTION')) THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Unrecognized Attendance grading schema; inspect before upgrading';
+        END IF;
+
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_event_t' AND COLUMN_NAME = 'LAST_MODIFIED_BY') THEN
+            SET @attendance_27_sql = CONCAT('ALTER TABLE `', event_table, '` ADD COLUMN LAST_MODIFIED_BY VARCHAR(99) NOT NULL DEFAULT ''migration''');
+            PREPARE attendance_27_statement FROM @attendance_27_sql;
+            EXECUTE attendance_27_statement;
+            DEALLOCATE PREPARE attendance_27_statement;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_event_t' AND COLUMN_NAME = 'LAST_MODIFIED_DATE') THEN
+            SET @attendance_27_sql = CONCAT('ALTER TABLE `', event_table, '` ADD COLUMN LAST_MODIFIED_DATE TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)');
+            PREPARE attendance_27_statement FROM @attendance_27_sql;
+            EXECUTE attendance_27_statement;
+            DEALLOCATE PREPARE attendance_27_statement;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_record_t' AND COLUMN_NAME = 'LAST_MODIFIED_BY') THEN
+            SET @attendance_27_sql = CONCAT('ALTER TABLE `', record_table, '` ADD COLUMN LAST_MODIFIED_BY VARCHAR(99) NOT NULL DEFAULT ''migration''');
+            PREPARE attendance_27_statement FROM @attendance_27_sql;
+            EXECUTE attendance_27_statement;
+            DEALLOCATE PREPARE attendance_27_statement;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_record_t' AND COLUMN_NAME = 'LAST_MODIFIED_DATE') THEN
+            SET @attendance_27_sql = CONCAT('ALTER TABLE `', record_table, '` ADD COLUMN LAST_MODIFIED_DATE TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)');
+            PREPARE attendance_27_statement FROM @attendance_27_sql;
+            EXECUTE attendance_27_statement;
+            DEALLOCATE PREPARE attendance_27_statement;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_grade_t' AND COLUMN_NAME = 'LAST_MODIFIED_BY') THEN
+            SET @attendance_27_sql = CONCAT('ALTER TABLE `', grade_table, '` ADD COLUMN LAST_MODIFIED_BY VARCHAR(99) NOT NULL DEFAULT ''migration''');
+            PREPARE attendance_27_statement FROM @attendance_27_sql;
+            EXECUTE attendance_27_statement;
+            DEALLOCATE PREPARE attendance_27_statement;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_grade_t' AND COLUMN_NAME = 'LAST_MODIFIED_DATE') THEN
+            SET @attendance_27_sql = CONCAT('ALTER TABLE `', grade_table, '` ADD COLUMN LAST_MODIFIED_DATE TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)');
+            PREPARE attendance_27_statement FROM @attendance_27_sql;
+            EXECUTE attendance_27_statement;
+            DEALLOCATE PREPARE attendance_27_statement;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_rule_t' AND COLUMN_NAME = 'LAST_MODIFIED_BY') THEN
+            SET @attendance_27_sql = CONCAT('ALTER TABLE `', rule_table, '` ADD COLUMN LAST_MODIFIED_BY VARCHAR(99) NOT NULL DEFAULT ''migration''');
+            PREPARE attendance_27_statement FROM @attendance_27_sql;
+            EXECUTE attendance_27_statement;
+            DEALLOCATE PREPARE attendance_27_statement;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_rule_t' AND COLUMN_NAME = 'LAST_MODIFIED_DATE') THEN
+            SET @attendance_27_sql = CONCAT('ALTER TABLE `', rule_table, '` ADD COLUMN LAST_MODIFIED_DATE TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)');
+            PREPARE attendance_27_statement FROM @attendance_27_sql;
+            EXECUTE attendance_27_statement;
+            DEALLOCATE PREPARE attendance_27_statement;
+        END IF;
+
+        -- Preserve GRADING_METHOD when an installation has already converted.
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_site_t' AND COLUMN_NAME = 'GRADING_METHOD') THEN
+            SET @attendance_27_sql = CONCAT('ALTER TABLE `', site_table, '` ADD COLUMN GRADING_METHOD INT DEFAULT 0');
+            PREPARE attendance_27_statement FROM @attendance_27_sql;
+            EXECUTE attendance_27_statement;
+            DEALLOCATE PREPARE attendance_27_statement;
+            SET @attendance_27_sql = CONCAT('UPDATE `', site_table, '` SET GRADING_METHOD = CASE
+                WHEN AUTO_GRADING IS NULL OR AUTO_GRADING = 0 THEN 0
+                WHEN GRADE_BY_SUBTRACTION IS NULL OR GRADE_BY_SUBTRACTION = 1 THEN 1
+                ELSE 2 END');
+            PREPARE attendance_27_statement FROM @attendance_27_sql;
+            EXECUTE attendance_27_statement;
+            DEALLOCATE PREPARE attendance_27_statement;
+        END IF;
+        IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_site_t' AND COLUMN_NAME = 'AUTO_GRADING') THEN
+            SET @attendance_27_sql = CONCAT('ALTER TABLE `', site_table, '` DROP COLUMN AUTO_GRADING');
+            PREPARE attendance_27_statement FROM @attendance_27_sql;
+            EXECUTE attendance_27_statement;
+            DEALLOCATE PREPARE attendance_27_statement;
+        END IF;
+        IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_site_t' AND COLUMN_NAME = 'GRADE_BY_SUBTRACTION') THEN
+            SET @attendance_27_sql = CONCAT('ALTER TABLE `', site_table, '` DROP COLUMN GRADE_BY_SUBTRACTION');
+            PREPARE attendance_27_statement FROM @attendance_27_sql;
+            EXECUTE attendance_27_statement;
+            DEALLOCATE PREPARE attendance_27_statement;
+        END IF;
+
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.STATISTICS
+                       WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_site_t' AND INDEX_NAME = 'UK_ATT_SITE_SITE_ID') THEN
+            SET @attendance_27_sql = CONCAT('ALTER TABLE `', site_table, '` ADD CONSTRAINT UK_ATT_SITE_SITE_ID UNIQUE (SITE_ID)');
+            PREPARE attendance_27_statement FROM @attendance_27_sql;
+            EXECUTE attendance_27_statement;
+            DEALLOCATE PREPARE attendance_27_statement;
+        END IF;
+
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.STATISTICS
+                       WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_record_t' AND INDEX_NAME = 'UK_ATTENDANCE_RECORD_USER') THEN
+            SET @attendance_27_sql = CONCAT('ALTER TABLE `', record_table, '` ADD CONSTRAINT UK_ATTENDANCE_RECORD_USER UNIQUE (USER_ID, A_EVENT_ID)');
+            PREPARE attendance_27_statement FROM @attendance_27_sql;
+            EXECUTE attendance_27_statement;
+            DEALLOCATE PREPARE attendance_27_statement;
+        END IF;
+
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.STATISTICS
+                       WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_rule_t' AND INDEX_NAME = 'UK_ATTENDANCE_RULE') THEN
+            SET @attendance_27_sql = CONCAT('ALTER TABLE `', rule_table, '` ADD CONSTRAINT UK_ATTENDANCE_RULE UNIQUE (A_SITE_ID, STATUS, START_RANGE, END_RANGE)');
+            PREPARE attendance_27_statement FROM @attendance_27_sql;
+            EXECUTE attendance_27_statement;
+            DEALLOCATE PREPARE attendance_27_statement;
+        END IF;
+
+        -- Hibernate 6 AUTO generation uses a per-entity sequence table (allocation size 50).
+        -- Start above existing rule IDs; retain a sequence table already created by Hibernate.
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES
+                       WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = 'attendance_rule_t_seq') THEN
+            SET @attendance_27_sql = CONCAT('SELECT COALESCE(MAX(GRADING_RULE_ID), 0) + 51 INTO @attendance_27_next_rule FROM `', rule_table, '`');
+            PREPARE attendance_27_statement FROM @attendance_27_sql;
+            EXECUTE attendance_27_statement;
+            DEALLOCATE PREPARE attendance_27_statement;
+            CREATE TABLE ATTENDANCE_RULE_T_SEQ (next_val BIGINT);
+            INSERT INTO ATTENDANCE_RULE_T_SEQ (next_val) VALUES (@attendance_27_next_rule);
+        END IF;
+    END IF;
+END //
+DELIMITER ;
+CALL attendance_migrate_27();
+DROP PROCEDURE attendance_migrate_27;
+-- END Attendance

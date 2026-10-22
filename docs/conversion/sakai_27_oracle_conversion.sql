@@ -360,3 +360,127 @@ CREATE TABLE lti_tool_permissions (
     FOREIGN KEY (tool_id) REFERENCES lti_tools (id)
 );
 -- SAK-52581 end
+
+-- Attendance: integrate the contrib tool in Sakai 27 (sakaiproject/sakai#15237).
+-- Run with Sakai stopped, a verified backup, and an SQL client that aborts on errors.
+-- Attendance was optional: skip installations without its tables. Existing installations
+-- must already have the contrib 1.0 and 20170215 schema upgrades applied.
+-- Do not also run the contrib Sakai 25 grading conversion: this block includes it.
+-- Duplicate sites/records/rules require administrator reconciliation before upgrading.
+-- Preserve conflicting grades, statuses and comments; never choose a winner by MIN(id).
+-- For duplicate SITE_IDs, reconcile/repoint children in ATTENDANCE_EVENT_T,
+-- ATTENDANCE_STATUS_T, ATTENDANCE_GRADE_T, ATTENDANCE_USER_STATS_T and ATTENDANCE_RULE_T.
+-- For duplicate (USER_ID, A_EVENT_ID) records or grading rules, retain the intended
+-- values and historical backup before removing redundant rows. Recalculate Attendance
+-- statistics after reconciliation and verify manual grades and Gradebook links.
+DECLARE
+    table_count NUMBER;
+    duplicate_groups NUMBER;
+    next_rule_id NUMBER;
+    FUNCTION has_column(table_name_in VARCHAR2, column_name_in VARCHAR2) RETURN BOOLEAN IS
+        matches NUMBER;
+    BEGIN
+        SELECT COUNT(*) INTO matches FROM USER_TAB_COLUMNS
+        WHERE TABLE_NAME = table_name_in AND COLUMN_NAME = column_name_in;
+        RETURN matches > 0;
+    END;
+BEGIN
+    SELECT COUNT(*) INTO table_count FROM USER_TABLES
+    WHERE TABLE_NAME IN ('ATTENDANCE_SITE_T', 'ATTENDANCE_EVENT_T',
+                        'ATTENDANCE_RECORD_T', 'ATTENDANCE_GRADE_T', 'ATTENDANCE_RULE_T');
+    IF table_count > 0 THEN
+        IF table_count <> 5 THEN
+            RAISE_APPLICATION_ERROR(-20001, 'Incomplete Attendance schema; apply contrib 1.0/20170215 upgrades first');
+        END IF;
+
+        -- Dynamic SQL is necessary: optional Attendance tables may not exist at compile time.
+        -- All data checks precede Attendance DDL, which commits implicitly.
+        EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM (SELECT 1 FROM ATTENDANCE_SITE_T GROUP BY SITE_ID HAVING COUNT(*) > 1)' INTO duplicate_groups;
+        IF duplicate_groups > 0 THEN
+            RAISE_APPLICATION_ERROR(-20001, 'Attendance duplicates in ATTENDANCE_SITE_T; reconcile before upgrading');
+        END IF;
+        EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM (SELECT 1 FROM ATTENDANCE_RECORD_T GROUP BY USER_ID, A_EVENT_ID HAVING COUNT(*) > 1)' INTO duplicate_groups;
+        IF duplicate_groups > 0 THEN
+            RAISE_APPLICATION_ERROR(-20001, 'Attendance duplicates in ATTENDANCE_RECORD_T; reconcile before upgrading');
+        END IF;
+        EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM (SELECT 1 FROM ATTENDANCE_RULE_T GROUP BY A_SITE_ID, STATUS, START_RANGE, END_RANGE HAVING COUNT(*) > 1)' INTO duplicate_groups;
+        IF duplicate_groups > 0 THEN
+            RAISE_APPLICATION_ERROR(-20001, 'Attendance duplicates in ATTENDANCE_RULE_T; reconcile before upgrading');
+        END IF;
+        IF NOT has_column('ATTENDANCE_SITE_T', 'GRADING_METHOD')
+           AND (NOT has_column('ATTENDANCE_SITE_T', 'AUTO_GRADING')
+                OR NOT has_column('ATTENDANCE_SITE_T', 'GRADE_BY_SUBTRACTION')) THEN
+            RAISE_APPLICATION_ERROR(-20001, 'Unrecognized Attendance grading schema; inspect before upgrading');
+        END IF;
+
+        -- Oracle treats empty strings as NULL; use the same non-empty historical marker as MySQL.
+        IF NOT has_column('ATTENDANCE_EVENT_T', 'LAST_MODIFIED_BY') THEN
+            EXECUTE IMMEDIATE 'ALTER TABLE ATTENDANCE_EVENT_T ADD (LAST_MODIFIED_BY VARCHAR2(99 CHAR) DEFAULT ''migration'' NOT NULL)';
+        END IF;
+        IF NOT has_column('ATTENDANCE_EVENT_T', 'LAST_MODIFIED_DATE') THEN
+            EXECUTE IMMEDIATE 'ALTER TABLE ATTENDANCE_EVENT_T ADD (LAST_MODIFIED_DATE TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP NOT NULL)';
+        END IF;
+        IF NOT has_column('ATTENDANCE_RECORD_T', 'LAST_MODIFIED_BY') THEN
+            EXECUTE IMMEDIATE 'ALTER TABLE ATTENDANCE_RECORD_T ADD (LAST_MODIFIED_BY VARCHAR2(99 CHAR) DEFAULT ''migration'' NOT NULL)';
+        END IF;
+        IF NOT has_column('ATTENDANCE_RECORD_T', 'LAST_MODIFIED_DATE') THEN
+            EXECUTE IMMEDIATE 'ALTER TABLE ATTENDANCE_RECORD_T ADD (LAST_MODIFIED_DATE TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP NOT NULL)';
+        END IF;
+        IF NOT has_column('ATTENDANCE_GRADE_T', 'LAST_MODIFIED_BY') THEN
+            EXECUTE IMMEDIATE 'ALTER TABLE ATTENDANCE_GRADE_T ADD (LAST_MODIFIED_BY VARCHAR2(99 CHAR) DEFAULT ''migration'' NOT NULL)';
+        END IF;
+        IF NOT has_column('ATTENDANCE_GRADE_T', 'LAST_MODIFIED_DATE') THEN
+            EXECUTE IMMEDIATE 'ALTER TABLE ATTENDANCE_GRADE_T ADD (LAST_MODIFIED_DATE TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP NOT NULL)';
+        END IF;
+        IF NOT has_column('ATTENDANCE_RULE_T', 'LAST_MODIFIED_BY') THEN
+            EXECUTE IMMEDIATE 'ALTER TABLE ATTENDANCE_RULE_T ADD (LAST_MODIFIED_BY VARCHAR2(99 CHAR) DEFAULT ''migration'' NOT NULL)';
+        END IF;
+        IF NOT has_column('ATTENDANCE_RULE_T', 'LAST_MODIFIED_DATE') THEN
+            EXECUTE IMMEDIATE 'ALTER TABLE ATTENDANCE_RULE_T ADD (LAST_MODIFIED_DATE TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP NOT NULL)';
+        END IF;
+
+        -- Preserve GRADING_METHOD when an installation has already converted.
+        IF NOT has_column('ATTENDANCE_SITE_T', 'GRADING_METHOD') THEN
+            EXECUTE IMMEDIATE 'ALTER TABLE ATTENDANCE_SITE_T ADD (GRADING_METHOD NUMBER(10,0) DEFAULT 0)';
+            EXECUTE IMMEDIATE 'UPDATE ATTENDANCE_SITE_T SET GRADING_METHOD = CASE
+                WHEN AUTO_GRADING IS NULL OR AUTO_GRADING = 0 THEN 0
+                WHEN GRADE_BY_SUBTRACTION IS NULL OR GRADE_BY_SUBTRACTION = 1 THEN 1
+                ELSE 2 END';
+        END IF;
+        IF has_column('ATTENDANCE_SITE_T', 'AUTO_GRADING') THEN
+            EXECUTE IMMEDIATE 'ALTER TABLE ATTENDANCE_SITE_T DROP COLUMN AUTO_GRADING';
+        END IF;
+        IF has_column('ATTENDANCE_SITE_T', 'GRADE_BY_SUBTRACTION') THEN
+            EXECUTE IMMEDIATE 'ALTER TABLE ATTENDANCE_SITE_T DROP COLUMN GRADE_BY_SUBTRACTION';
+        END IF;
+
+        SELECT COUNT(*) INTO table_count FROM USER_CONSTRAINTS
+        WHERE TABLE_NAME = 'ATTENDANCE_SITE_T' AND CONSTRAINT_NAME = 'UK_ATT_SITE_SITE_ID';
+        IF table_count = 0 THEN
+            EXECUTE IMMEDIATE 'ALTER TABLE ATTENDANCE_SITE_T ADD CONSTRAINT UK_ATT_SITE_SITE_ID UNIQUE (SITE_ID)';
+        END IF;
+
+        SELECT COUNT(*) INTO table_count FROM USER_CONSTRAINTS
+        WHERE TABLE_NAME = 'ATTENDANCE_RECORD_T' AND CONSTRAINT_NAME = 'UK_ATTENDANCE_RECORD_USER';
+        IF table_count = 0 THEN
+            EXECUTE IMMEDIATE 'ALTER TABLE ATTENDANCE_RECORD_T ADD CONSTRAINT UK_ATTENDANCE_RECORD_USER UNIQUE (USER_ID, A_EVENT_ID)';
+        END IF;
+
+        SELECT COUNT(*) INTO table_count FROM USER_CONSTRAINTS
+        WHERE TABLE_NAME = 'ATTENDANCE_RULE_T' AND CONSTRAINT_NAME = 'UK_ATTENDANCE_RULE';
+        IF table_count = 0 THEN
+            EXECUTE IMMEDIATE 'ALTER TABLE ATTENDANCE_RULE_T ADD CONSTRAINT UK_ATTENDANCE_RULE UNIQUE (A_SITE_ID, STATUS, START_RANGE, END_RANGE)';
+        END IF;
+
+        -- Hibernate 6 AUTO generation uses ATTENDANCE_RULE_T_SEQ with allocation size 50.
+        -- Preserve existing sequence state and the other explicitly named Attendance sequences.
+        SELECT COUNT(*) INTO table_count FROM USER_SEQUENCES WHERE SEQUENCE_NAME = 'ATTENDANCE_RULE_T_SEQ';
+        IF table_count = 0 THEN
+            EXECUTE IMMEDIATE 'SELECT COALESCE(MAX(GRADING_RULE_ID), 0) + 51 FROM ATTENDANCE_RULE_T' INTO next_rule_id;
+            EXECUTE IMMEDIATE 'CREATE SEQUENCE ATTENDANCE_RULE_T_SEQ START WITH '
+                || TO_CHAR(next_rule_id, 'FM99999999999999999999') || ' INCREMENT BY 50';
+        END IF;
+    END IF;
+END;
+/
+-- END Attendance
