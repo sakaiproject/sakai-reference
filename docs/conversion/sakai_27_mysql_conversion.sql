@@ -144,6 +144,12 @@ CALL polls_migrate_jpa();
 DROP PROCEDURE IF EXISTS polls_migrate_jpa;
 -- END SAK-52039
 
+-- Polls: restore foreign keys after converting the identifiers.
+ALTER TABLE POLL_OPTION ADD CONSTRAINT POLL_OPTION_POLL_FK
+    FOREIGN KEY (OPTION_POLL_ID) REFERENCES POLL_POLL (POLL_ID);
+ALTER TABLE POLL_VOTE ADD CONSTRAINT POLL_VOTE_OPTION_FK
+    FOREIGN KEY (VOTE_OPTION) REFERENCES POLL_OPTION (OPTION_ID);
+
 -- SAK-52971 Polls: renumber OPTION_ORDER contiguously per poll
 
 -- Legacy Polls did not keep OPTION_ORDER contiguous: a new option took the
