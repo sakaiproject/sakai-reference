@@ -182,6 +182,9 @@ ADD COLUMN ACCESS_TYPE varchar(10) NOT NULL DEFAULT 'SITE';
 UPDATE POLL_POLL SET ACCESS_TYPE = 'SITE';
 -- END SAK-10208
 
+-- SAK-52757 Messages: add the missing MySQL move-history index.
+CREATE INDEX MFR_MOVE_HISTORY_MSG_ID ON MFR_MOVE_HISTORY_T (MESSAGE_ID);
+
 -- SAK-52889: migrate Conversations tags and retire Taggable.
 ALTER TABLE tagservice_tag DROP FOREIGN KEY tagservice_tag_ibfk_1;
 ALTER TABLE tagservice_collection MODIFY tagcollectionid VARCHAR(99) NOT NULL;
