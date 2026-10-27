@@ -351,6 +351,22 @@ AND NOT EXISTS (SELECT 1 FROM SAKAI_SITE_TOOL WHERE SITE_ID = '!admin' AND REGIS
 -- SAK-52991 Preferences optimistic locking
 ALTER TABLE SAKAI_PREFERENCES ADD (VERSION NUMBER(19) DEFAULT 0 NOT NULL);
 
+-- LTI: legacy INTEGER columns already hold Long IDs; add the JPA keys and allocation sizes.
+ALTER TABLE lti_tools ADD PRIMARY KEY (id);
+ALTER TABLE lti_content ADD PRIMARY KEY (id);
+ALTER TABLE lti_tool_site ADD PRIMARY KEY (id);
+ALTER TABLE lti_tools ADD (lti13_lms_deployment_id VARCHAR2(1024 CHAR));
+ALTER TABLE lti_memberships_jobs ADD PRIMARY KEY (SITE_ID);
+UPDATE lti_content
+SET tool_id = NULL
+WHERE tool_id IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM lti_tools WHERE lti_tools.id = lti_content.tool_id);
+ALTER TABLE lti_content ADD CONSTRAINT LTI_CONTENT_TOOL_FK FOREIGN KEY (tool_id) REFERENCES lti_tools (id);
+ALTER TABLE lti_tool_site ADD CONSTRAINT LTI_TOOL_SITE_TOOL_FK FOREIGN KEY (tool_id) REFERENCES lti_tools (id);
+ALTER SEQUENCE lti_tools_id_sequence INCREMENT BY 50;
+ALTER SEQUENCE lti_content_id_sequence INCREMENT BY 50;
+ALTER SEQUENCE lti_tool_site_id_sequence INCREMENT BY 50;
+
 -- SAK-52581 start
 CREATE TABLE lti_tool_permissions (
   tool_id NUMBER(19,0) NOT NULL,
