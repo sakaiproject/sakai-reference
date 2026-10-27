@@ -767,3 +767,108 @@ ALTER TABLE ATTENDANCE_USER_STATS_T
    FOREIGN KEY (A_SITE_ID)
    REFERENCES ATTENDANCE_SITE_T (A_SITE_ID);
 -- END Attendance
+
+-- SAK-52621 start
+
+CREATE TABLE IF NOT EXISTS vtm_analytics_event (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    eventTime BIGINT NOT NULL,
+    eventType VARCHAR(32) NOT NULL,
+    siteId VARCHAR(99) NOT NULL,
+    userId VARCHAR(99) NOT NULL,
+    videoId VARCHAR(36) NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS vtm_category (
+    id VARCHAR(36) NOT NULL,
+    createdBy VARCHAR(99),
+    createdOn BIGINT NOT NULL,
+    modifiedBy VARCHAR(99),
+    modifiedOn BIGINT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    parentCategoryId VARCHAR(36),
+    siteId VARCHAR(99) NOT NULL,
+    sortOrder INTEGER NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS vtm_lesson_link (
+    id VARCHAR(36) NOT NULL,
+    createdOn BIGINT NOT NULL,
+    lessonItemId VARCHAR(99),
+    lessonPageId VARCHAR(99) NOT NULL,
+    siteId VARCHAR(99) NOT NULL,
+    videoId VARCHAR(36) NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS vtm_oauth_credentials (
+    id VARCHAR(36) NOT NULL,
+    apiKey VARCHAR(255),
+    clientId VARCHAR(255),
+    secret VARCHAR(4000),
+    createdOn BIGINT NOT NULL,
+    modifiedOn BIGINT NOT NULL,
+    providerType ENUM('EXTERNAL','HLS_UPLOAD','NATIVE','RESOURCES','YOUTUBE_UPLOAD') NOT NULL,
+    refresh_token VARCHAR(4000),
+    PRIMARY KEY (id),
+    CONSTRAINT UK4cn2jlcahdjg5b2tg11e6n73p UNIQUE (providerType)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS vtm_user_video_pref (
+    id VARCHAR(36) NOT NULL,
+    createdOn BIGINT NOT NULL,
+    favorite BIT NOT NULL,
+    modifiedOn BIGINT NOT NULL,
+    siteId VARCHAR(99) NOT NULL,
+    userId VARCHAR(99) NOT NULL,
+    videoId VARCHAR(36) NOT NULL,
+    watchLater BIT NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS vtm_video (
+    id VARCHAR(36) NOT NULL,
+    createdOn BIGINT NOT NULL,
+    description VARCHAR(4000),
+    fileSizeBytes BIGINT,
+    inheritDescriptionMetadata BIT NOT NULL,
+    inheritTitleMetadata BIT NOT NULL,
+    modifiedOn BIGINT NOT NULL,
+    ownerId VARCHAR(99) NOT NULL,
+    providerType ENUM('EXTERNAL','HLS_UPLOAD','NATIVE','RESOURCES','YOUTUBE_UPLOAD') NOT NULL,
+    publicationStatus ENUM('ARCHIVED','DRAFT','PENDING_APPROVAL','PUBLISHED','WITHDRAWN') NOT NULL,
+    releaseDate BIGINT,
+    requiredViewPermission VARCHAR(99) NOT NULL,
+    retractDate BIGINT,
+    siteId VARCHAR(99) NOT NULL,
+    sourceDeleted BIT NOT NULL,
+    sourceReference VARCHAR(1024) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    visibilityScope ENUM('COURSE','GLOBAL','LESSON') NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+-- Join table behind VideoTrainingVideo.categories (@ManyToMany).
+CREATE TABLE IF NOT EXISTS vtm_video_category (
+    video_id VARCHAR(36) NOT NULL,
+    category_id VARCHAR(36) NOT NULL,
+    PRIMARY KEY (video_id, category_id),
+    CONSTRAINT FKprr31fu8bl59ntapjh5qleflp FOREIGN KEY (category_id) REFERENCES vtm_category (id),
+    CONSTRAINT FKjxhwu3bhkblxt1a7nv8erne6s FOREIGN KEY (video_id) REFERENCES vtm_video (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS vtm_video_process_job (
+    id VARCHAR(36) NOT NULL,
+    createdOn BIGINT NOT NULL,
+    errorMessage VARCHAR(4000),
+    modifiedOn BIGINT NOT NULL,
+    status ENUM('COMPLETED','FAILED','PENDING','PROCESSING','RETRY') NOT NULL,
+    submitterUserId VARCHAR(99) NOT NULL,
+    tempFilePath VARCHAR(1024) NOT NULL,
+    videoId VARCHAR(36) NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+-- SAK-52621 end
