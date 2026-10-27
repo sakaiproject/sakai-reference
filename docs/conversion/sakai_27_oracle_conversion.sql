@@ -510,3 +510,144 @@ ALTER TABLE ATTENDANCE_USER_STATS_T
    FOREIGN KEY (A_SITE_ID)
    REFERENCES ATTENDANCE_SITE_T;
 -- END Attendance
+
+-- SAK-52621 start
+
+DECLARE
+    v_count NUMBER;
+
+    PROCEDURE create_table(p_table VARCHAR2, p_ddl VARCHAR2) IS
+        v_exists NUMBER;
+    BEGIN
+        SELECT COUNT(*) INTO v_exists FROM USER_TABLES WHERE TABLE_NAME = UPPER(p_table);
+        IF v_exists = 0 THEN
+            EXECUTE IMMEDIATE p_ddl;
+        END IF;
+    END;
+BEGIN
+    SELECT COUNT(*) INTO v_count FROM USER_SEQUENCES WHERE SEQUENCE_NAME = 'VTM_ANALYTICS_EVENT_S';
+    IF v_count = 0 THEN
+        EXECUTE IMMEDIATE 'CREATE SEQUENCE VTM_ANALYTICS_EVENT_S START WITH 1 INCREMENT BY 50';
+    END IF;
+
+    create_table('VTM_ANALYTICS_EVENT', q'[
+        CREATE TABLE vtm_analytics_event (
+            id NUMBER(19,0) NOT NULL,
+            eventTime NUMBER(19,0) NOT NULL,
+            eventType VARCHAR2(32 CHAR) NOT NULL,
+            siteId VARCHAR2(99 CHAR) NOT NULL,
+            userId VARCHAR2(99 CHAR) NOT NULL,
+            videoId VARCHAR2(36 CHAR) NOT NULL,
+            PRIMARY KEY (id)
+        )
+    ]');
+
+    create_table('VTM_CATEGORY', q'[
+        CREATE TABLE vtm_category (
+            id VARCHAR2(36 CHAR) NOT NULL,
+            createdBy VARCHAR2(99 CHAR),
+            createdOn NUMBER(19,0) NOT NULL,
+            modifiedBy VARCHAR2(99 CHAR),
+            modifiedOn NUMBER(19,0) NOT NULL,
+            name VARCHAR2(255 CHAR) NOT NULL,
+            parentCategoryId VARCHAR2(36 CHAR),
+            siteId VARCHAR2(99 CHAR) NOT NULL,
+            sortOrder NUMBER(10,0) NOT NULL,
+            PRIMARY KEY (id)
+        )
+    ]');
+
+    create_table('VTM_LESSON_LINK', q'[
+        CREATE TABLE vtm_lesson_link (
+            id VARCHAR2(36 CHAR) NOT NULL,
+            createdOn NUMBER(19,0) NOT NULL,
+            lessonItemId VARCHAR2(99 CHAR),
+            lessonPageId VARCHAR2(99 CHAR) NOT NULL,
+            siteId VARCHAR2(99 CHAR) NOT NULL,
+            videoId VARCHAR2(36 CHAR) NOT NULL,
+            PRIMARY KEY (id)
+        )
+    ]');
+
+    create_table('VTM_OAUTH_CREDENTIALS', q'[
+        CREATE TABLE vtm_oauth_credentials (
+            id VARCHAR2(36 CHAR) NOT NULL,
+            apiKey VARCHAR2(255 CHAR),
+            clientId VARCHAR2(255 CHAR),
+            secret VARCHAR2(4000 CHAR),
+            createdOn NUMBER(19,0) NOT NULL,
+            modifiedOn NUMBER(19,0) NOT NULL,
+            providerType VARCHAR2(32 CHAR) NOT NULL UNIQUE CHECK (providerType IN ('RESOURCES','EXTERNAL','NATIVE','HLS_UPLOAD','YOUTUBE_UPLOAD')),
+            refresh_token VARCHAR2(4000 CHAR),
+            PRIMARY KEY (id)
+        )
+    ]');
+
+    create_table('VTM_USER_VIDEO_PREF', q'[
+        CREATE TABLE vtm_user_video_pref (
+            id VARCHAR2(36 CHAR) NOT NULL,
+            createdOn NUMBER(19,0) NOT NULL,
+            favorite NUMBER(1,0) NOT NULL CHECK (favorite IN (0,1)),
+            modifiedOn NUMBER(19,0) NOT NULL,
+            siteId VARCHAR2(99 CHAR) NOT NULL,
+            userId VARCHAR2(99 CHAR) NOT NULL,
+            videoId VARCHAR2(36 CHAR) NOT NULL,
+            watchLater NUMBER(1,0) NOT NULL CHECK (watchLater IN (0,1)),
+            PRIMARY KEY (id)
+        )
+    ]');
+
+    create_table('VTM_VIDEO', q'[
+        CREATE TABLE vtm_video (
+            id VARCHAR2(36 CHAR) NOT NULL,
+            createdOn NUMBER(19,0) NOT NULL,
+            description VARCHAR2(4000 CHAR),
+            fileSizeBytes NUMBER(19,0),
+            inheritDescriptionMetadata NUMBER(1,0) NOT NULL CHECK (inheritDescriptionMetadata IN (0,1)),
+            inheritTitleMetadata NUMBER(1,0) NOT NULL CHECK (inheritTitleMetadata IN (0,1)),
+            modifiedOn NUMBER(19,0) NOT NULL,
+            ownerId VARCHAR2(99 CHAR) NOT NULL,
+            providerType VARCHAR2(16 CHAR) NOT NULL CHECK (providerType IN ('RESOURCES','EXTERNAL','NATIVE','HLS_UPLOAD','YOUTUBE_UPLOAD')),
+            publicationStatus VARCHAR2(16 CHAR) NOT NULL CHECK (publicationStatus IN ('DRAFT','PENDING_APPROVAL','PUBLISHED','WITHDRAWN','ARCHIVED')),
+            releaseDate NUMBER(19,0),
+            requiredViewPermission VARCHAR2(99 CHAR) NOT NULL,
+            retractDate NUMBER(19,0),
+            siteId VARCHAR2(99 CHAR) NOT NULL,
+            sourceDeleted NUMBER(1,0) NOT NULL CHECK (sourceDeleted IN (0,1)),
+            sourceReference VARCHAR2(1024 CHAR) NOT NULL,
+            title VARCHAR2(255 CHAR) NOT NULL,
+            visibilityScope VARCHAR2(16 CHAR) NOT NULL CHECK (visibilityScope IN ('GLOBAL','COURSE','LESSON')),
+            PRIMARY KEY (id)
+        )
+    ]');
+
+    -- Join table behind VideoTrainingVideo.categories (@ManyToMany).
+    create_table('VTM_VIDEO_CATEGORY', q'[
+        CREATE TABLE vtm_video_category (
+            video_id VARCHAR2(36 CHAR) NOT NULL,
+            category_id VARCHAR2(36 CHAR) NOT NULL,
+            PRIMARY KEY (video_id, category_id),
+            CONSTRAINT FKprr31fu8bl59ntapjh5qleflp FOREIGN KEY (category_id) REFERENCES vtm_category (id),
+            CONSTRAINT FKjxhwu3bhkblxt1a7nv8erne6s FOREIGN KEY (video_id) REFERENCES vtm_video (id)
+        )
+    ]');
+
+    create_table('VTM_VIDEO_PROCESS_JOB', q'[
+        CREATE TABLE vtm_video_process_job (
+            id VARCHAR2(36 CHAR) NOT NULL,
+            createdOn NUMBER(19,0) NOT NULL,
+            errorMessage VARCHAR2(4000 CHAR),
+            modifiedOn NUMBER(19,0) NOT NULL,
+            status VARCHAR2(16 CHAR) NOT NULL CHECK (status IN ('PENDING','PROCESSING','COMPLETED','FAILED','RETRY')),
+            submitterUserId VARCHAR2(99 CHAR) NOT NULL,
+            tempFilePath VARCHAR2(1024 CHAR) NOT NULL,
+            videoId VARCHAR2(36 CHAR) NOT NULL,
+            PRIMARY KEY (id)
+        )
+    ]');
+END;
+/
+
+COMMIT;
+
+-- SAK-52621 end
