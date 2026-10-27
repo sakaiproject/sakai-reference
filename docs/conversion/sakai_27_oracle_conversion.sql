@@ -57,6 +57,10 @@ CREATE TABLE mc_team_archive (
 );
 -- END SAK-52642
 
+-- Notifications: broadcast and expiry support.
+ALTER TABLE USER_NOTIFICATIONS ADD (BROADCAST NUMBER(1,0) DEFAULT 0 CHECK (BROADCAST IN (0,1)), END_DATE TIMESTAMP(6));
+ALTER TABLE USER_NOTIFICATIONS MODIFY (URL NULL);
+
 -- SAK-52039 Polls: migrate persistence to Spring Data JPA (Oracle)
 
 -- The Poll primary key changes from a numeric POLL_ID (fed by the
