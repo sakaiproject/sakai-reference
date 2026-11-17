@@ -872,3 +872,32 @@ CREATE TABLE IF NOT EXISTS vtm_video_process_job (
 ) ENGINE=InnoDB;
 
 -- SAK-52621 end
+
+-- SAK-52438: partial correction of encoded external Gradebook titles (#15381).
+-- Run with Sakai stopped, before starting the upgraded application.
+-- Only correct titles that still exactly match the encoded source title.
+-- Decode ampersands LAST so nested/literal entity text is decoded only once.
+-- INCOMPLETE: named accents, emoji/numeric references other than quotes, stale
+-- titles, and titles without a matching source are left for local review.
+-- See SAK-52438-external-title-conversion.md for queries and a local AI prompt.
+
+UPDATE GB_GRADABLE_OBJECT_T g
+JOIN SAM_PUBLISHEDASSESSMENT_T p ON g.EXTERNAL_ID = CAST(p.ID AS CHAR)
+SET g.NAME = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(g.NAME,
+    '&quot;', CHAR(34)), '&#34;', CHAR(34)), '&#39;', CHAR(39)),
+    '&lt;', '<'), '&gt;', '>'), '&amp;', '&')
+WHERE g.EXTERNAL_APP_NAME = 'sakai.samigo'
+  AND g.EXTERNALLY_MAINTAINED = 1 AND g.REMOVED = 0
+  AND CAST(g.NAME AS BINARY) = CAST(p.TITLE AS BINARY)
+  AND g.NAME LIKE '%&%;';
+
+UPDATE GB_GRADABLE_OBJECT_T g
+JOIN ASN_ASSIGNMENT a ON g.EXTERNAL_ID = CONCAT('/assignment/a/', a.CONTEXT, '/', a.ASSIGNMENT_ID)
+SET g.NAME = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(g.NAME,
+    '&quot;', CHAR(34)), '&#34;', CHAR(34)), '&#39;', CHAR(39)),
+    '&lt;', '<'), '&gt;', '>'), '&amp;', '&')
+WHERE g.EXTERNAL_APP_NAME = 'sakai.assignment.grades'
+  AND g.EXTERNALLY_MAINTAINED = 1 AND g.REMOVED = 0
+  AND CAST(g.NAME AS BINARY) = CAST(a.TITLE AS BINARY)
+  AND g.NAME LIKE '%&%;';
+-- END SAK-52438
