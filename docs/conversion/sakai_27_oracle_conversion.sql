@@ -651,3 +651,33 @@ END;
 COMMIT;
 
 -- SAK-52621 end
+
+-- SAK-52438: partial correction of encoded external Gradebook titles (#15381).
+-- Run with Sakai stopped, before starting the upgraded application.
+-- Only correct titles that still exactly match the encoded source title.
+-- Decode ampersands LAST so nested/literal entity text is decoded only once.
+-- INCOMPLETE: named accents, emoji/numeric references other than quotes, stale
+-- titles, and titles without a matching source are left for local review.
+-- See SAK-52438-external-title-conversion.md for queries and a local AI prompt.
+
+UPDATE GB_GRADABLE_OBJECT_T g
+SET NAME = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(g.NAME,
+    CHR(38) || 'quot;', CHR(34)), CHR(38) || '#34;', CHR(34)), CHR(38) || '#39;', CHR(39)),
+    CHR(38) || 'lt;', '<'), CHR(38) || 'gt;', '>'), CHR(38) || 'amp;', CHR(38))
+WHERE g.EXTERNAL_APP_NAME = 'sakai.samigo'
+  AND g.EXTERNALLY_MAINTAINED = 1 AND g.REMOVED = 0
+  AND g.NAME LIKE '%' || CHR(38) || '%;'
+  AND EXISTS (SELECT 1 FROM SAM_PUBLISHEDASSESSMENT_T p
+              WHERE g.EXTERNAL_ID = TO_CHAR(p.ID) AND g.NAME = p.TITLE);
+
+UPDATE GB_GRADABLE_OBJECT_T g
+SET NAME = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(g.NAME,
+    CHR(38) || 'quot;', CHR(34)), CHR(38) || '#34;', CHR(34)), CHR(38) || '#39;', CHR(39)),
+    CHR(38) || 'lt;', '<'), CHR(38) || 'gt;', '>'), CHR(38) || 'amp;', CHR(38))
+WHERE g.EXTERNAL_APP_NAME = 'sakai.assignment.grades'
+  AND g.EXTERNALLY_MAINTAINED = 1 AND g.REMOVED = 0
+  AND g.NAME LIKE '%' || CHR(38) || '%;'
+  AND EXISTS (SELECT 1 FROM ASN_ASSIGNMENT a
+              WHERE g.EXTERNAL_ID = '/assignment/a/' || a.CONTEXT || '/' || a.ASSIGNMENT_ID
+                AND g.NAME = a.TITLE);
+-- END SAK-52438
