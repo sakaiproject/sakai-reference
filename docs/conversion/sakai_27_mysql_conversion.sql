@@ -47,6 +47,11 @@ CREATE TABLE mc_team_archive (
 ALTER TABLE mc_team_archive ADD CONSTRAINT UKmc9f2k3lrxwp7v8qntjd5hs0ya UNIQUE (site_id, team_id);
 -- END SAK-52642
 
+-- Notifications: broadcast and expiry support.
+ALTER TABLE USER_NOTIFICATIONS ADD BROADCAST BIT(1) DEFAULT b'0';
+ALTER TABLE USER_NOTIFICATIONS ADD END_DATE DATETIME(6);
+ALTER TABLE USER_NOTIFICATIONS MODIFY URL VARCHAR(2048) NULL;
+
 -- SAK-52039 Polls: migrate persistence to Spring Data JPA (MySQL)
 
 -- The Poll primary key changes from a numeric, AUTO_INCREMENT POLL_ID to the
