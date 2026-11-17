@@ -611,6 +611,19 @@ AND NOT EXISTS (SELECT 1 FROM SAKAI_SITE_TOOL WHERE SITE_ID = '!admin' AND REGIS
 -- SAK-52991 Preferences optimistic locking
 ALTER TABLE SAKAI_PREFERENCES ADD COLUMN VERSION BIGINT DEFAULT 0 NOT NULL;
 
+-- LTI: align existing identifiers with the JPA entities before adding permissions.
+ALTER TABLE lti_tools MODIFY id BIGINT NOT NULL AUTO_INCREMENT;
+ALTER TABLE lti_content MODIFY id BIGINT NOT NULL AUTO_INCREMENT, MODIFY tool_id BIGINT;
+ALTER TABLE lti_tool_site MODIFY id BIGINT NOT NULL AUTO_INCREMENT, MODIFY tool_id BIGINT;
+ALTER TABLE lti_tools ADD lti13_lms_deployment_id VARCHAR(1024);
+ALTER TABLE lti_memberships_jobs MODIFY SITE_ID VARCHAR(99) NOT NULL, ADD PRIMARY KEY (SITE_ID);
+UPDATE lti_content
+SET tool_id = NULL
+WHERE tool_id IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM lti_tools WHERE lti_tools.id = lti_content.tool_id);
+ALTER TABLE lti_content ADD CONSTRAINT LTI_CONTENT_TOOL_FK FOREIGN KEY (tool_id) REFERENCES lti_tools (id);
+ALTER TABLE lti_tool_site ADD CONSTRAINT LTI_TOOL_SITE_TOOL_FK FOREIGN KEY (tool_id) REFERENCES lti_tools (id);
+
 -- SAK-52581 start
 CREATE TABLE lti_tool_permissions (
   tool_id bigint NOT NULL,
