@@ -366,6 +366,14 @@ ALTER TABLE CM_MEETING_T
     MODIFY COLUMN START_TIME TIME(6) DEFAULT NULL,
     MODIFY COLUMN FINISH_TIME TIME(6) DEFAULT NULL;
 
+-- Lessons maps these columns as <timestamp> version properties. Hibernate 6 keeps
+-- the version with fractional seconds and checks it in the WHERE clause of the
+-- UPDATE, so on a DATETIME column without them the UPDATE matches no row. Saving a
+-- student's question answer then fails with a StaleObjectStateException.
+ALTER TABLE lesson_builder_q_responses MODIFY COLUMN timeAnswered DATETIME(6) NOT NULL;
+ALTER TABLE lesson_builder_log MODIFY COLUMN lastViewed DATETIME(6) NOT NULL;
+ALTER TABLE lesson_builder_student_pages MODIFY COLUMN lastUpdated DATETIME(6) NOT NULL;
+
 -- Hibernate 6 sorts the properties of an hbm.xml composite-id alphabetically, so the
 -- primary keys of the question pool tables now start with ITEMID / ACCESSTYPEID
 -- instead of QUESTIONPOOLID. Because QUESTIONPOOLID no longer leads the key, the
